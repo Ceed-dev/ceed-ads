@@ -3,8 +3,8 @@
  * for ad-event logs within the Ceed Ads platform (MVP).
  *
  * An event represents a user-visible outcome of an ad:
- * - "ad_shown": the ad became visible to the user
- * - "ad_clicked": the user tapped/clicked the CTA
+ * - "impression": the ad became visible to the user
+ * - "click": the user tapped/clicked the CTA
  *
  * These events are essential for impression/click tracking,
  * CTR calculation, and advertiser performance reporting.
@@ -16,7 +16,7 @@
 export type EventId = string;
 
 /** Types of ad events tracked in the MVP. */
-export type EventType = "ad_shown" | "ad_clicked";
+export type EventType = "impression" | "click";
 
 /** Timestamps for auditability. */
 export interface EventMeta {
