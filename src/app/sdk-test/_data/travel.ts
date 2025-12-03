@@ -3,10 +3,10 @@
 // Used for the fake chat simulation in /sdk-test.
 // Contains: 10 messages (5 user / 5 AI).
 //
-// Trigger keyword for ad injection:
-//    -> "nice hotel" (user message)
-// The SDK will later detect this and inject the Action Card ad.
-//
+// The final user message intentionally includes keywords such as
+// "nice" and "hotel". These keywords match the tags defined in
+// travel-related ads (e.g., ["hotel", "travel", "okinawa"]), so the
+// backend keyword-based ad decider will return a travel ad here.
 // -----------------------------------------------------------------------------
 
 import type { ChatMessageUserAi } from "@/sdk/core/types";
@@ -54,7 +54,11 @@ export const travelScenario: ChatMessageUserAi[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // Trigger message — SDK detects: "nice hotel"
+  // Trigger message:
+  // This user message includes keywords such as "nice" and "hotel".
+  // These keywords will match the tags defined in travel-related ads
+  // (e.g., ["hotel", "travel", "okinawa"]), so the backend keyword-based
+  // ad decider will return a travel ad at this point.
   // ---------------------------------------------------------------------------
   {
     id: "u5",

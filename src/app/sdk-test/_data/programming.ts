@@ -1,10 +1,11 @@
 // -----------------------------------------------------------------------------
 // Programming Learning Scenario (Demo Conversation Script)
 // Used for the fake chat simulation in /sdk-test.
-// Contains: 10 messages (5 user / 5 AI).
-// Trigger keyword for ad injection:
-//   -> "AI coding course"
-// The SDK will detect this keyword later.
+//
+// The final user message intentionally includes keywords such as
+// "AI", "coding", and "course". These keywords match the tags defined
+// in the programming-related ad documents, so the backend keyword-based
+// ad decider will return a relevant ad at that point.
 // -----------------------------------------------------------------------------
 
 import type { ChatMessageUserAi } from "@/sdk/core/types";
@@ -52,7 +53,10 @@ export const programmingScenario: ChatMessageUserAi[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // Trigger message — SDK will detect: "AI coding course"
+  // Trigger message:
+  // This user message includes keywords such as "AI", "coding", and "course".
+  // These will match the ad's tags (e.g. ["ai", "coding", "course"]),
+  // causing the backend keyword-based ad decider to return a programming ad here.
   // ---------------------------------------------------------------------------
   {
     id: "u5",

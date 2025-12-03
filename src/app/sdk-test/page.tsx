@@ -216,7 +216,7 @@ export default function SdkTestPage() {
     }
 
     /* Normal scenario progression */
-    const nextAi = scenario[scenarioIndex];
+    const nextAi = scenario[scenarioIndex + 1];
     if (!nextAi) return;
 
     setIsThinking(true);
@@ -247,16 +247,14 @@ export default function SdkTestPage() {
           ) : (
             <div
               key={m.id}
-              className={`flex ${
-                m.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
-                  m.role === "user"
+                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${m.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 text-gray-200"
-                }`}
+                  }`}
               >
                 {m.text}
               </div>

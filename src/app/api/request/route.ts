@@ -1,23 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import type { RequestLog } from "@/types";
-
-/**
- * Shape of the ad returned from Firestore + advertiserName.
- * This extends the base Ad with one extra field.
- */
-interface DecidedAd {
-  id: string;
-  advertiserId: string;
-  advertiserName: string;
-  format: "action_card";
-  title: string;
-  description: string;
-  ctaText: string;
-  ctaUrl: string;
-  tags: string[];
-  status: "active" | "paused" | "archived";
-}
+import {
+  decideAdByKeyword,
+  type DecidedAd,
+} from "@/lib/ads/deciders/keywordBased";
 
 /**
  * POST /api/request
@@ -60,37 +47,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ---------------------------------------------------------
-    // 3. Decide Ad (MVP version)
-    //    For now, return the first active ad.
+    // 3. Decide Ad using keyword-based logic (MVP)
     // ---------------------------------------------------------
-    const adsSnap = await db
-      .collection("ads")
-      .where("status", "==", "active")
-      .limit(1)
-      .get();
-
-    let decidedAd: DecidedAd | null = null;
-
-    if (!adsSnap.empty) {
-      const raw = adsSnap.docs[0];
-      const rawAd = {
-        id: raw.id,
-        ...(raw.data() as Omit<DecidedAd, "id" | "advertiserName">),
-      };
-
-      // Fetch advertiser info
-      const advSnap = await db
-        .collection("advertisers")
-        .doc(rawAd.advertiserId)
-        .get();
-
-      const advData = advSnap.exists ? advSnap.data() : null;
-
-      decidedAd = {
-        ...rawAd,
-        advertiserName: advData?.name ?? "Advertiser",
-      };
-    }
+    const decidedAd: DecidedAd | null = await decideAdByKeyword(contextText);
 
     // ---------------------------------------------------------
     // 4. Store Request Log

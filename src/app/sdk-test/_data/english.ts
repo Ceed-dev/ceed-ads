@@ -1,8 +1,11 @@
 // -----------------------------------------------------------------------------
 // English Learning Scenario (Demo Conversation Script)
 // Used for the fake chat simulation in /sdk-test.
-// This script contains 10 messages (5 user + 5 AI) and includes a keyword
-// in the later stage to trigger ad injection via the SDK.
+//
+// The final user message intentionally includes keywords such as
+// "AI", "English", and "conversation". These keywords match the tags
+// defined in the ad documents, so the backend keyword-based ad decider
+// will return an English-related ad at that point.
 // -----------------------------------------------------------------------------
 
 import type { ChatMessageUserAi } from "@/sdk/core/types";
@@ -50,8 +53,11 @@ export const englishScenario: ChatMessageUserAi[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // Trigger keyword for ad injection:
-  // The SDK will detect the phrase: "AI English conversation app"
+  // Trigger point for ad injection:
+  // The following user message includes keywords such as
+  // "AI", "English", and "conversation" —
+  // these will match the ad's `tags` field (e.g., ["english", "ai", "conversation"]),
+  // causing the backend keyword-based system to return a relevant ad here.
   // ---------------------------------------------------------------------------
   {
     id: "u5",
