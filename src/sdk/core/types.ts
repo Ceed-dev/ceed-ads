@@ -23,6 +23,7 @@
 export interface Ad {
   id: string; // Firestore document ID
   advertiserId: string;
+  advertiserName: string;
   format: "action_card";
   title: string;
   description: string;
@@ -96,3 +97,25 @@ export interface RenderedAd {
   ad: Ad; // The ad that was rendered
   requestId: string; // Used for event tracking
 }
+
+/* ----------------------------------------------------
+ * 6. Chat Message Types (Used in SDK Test Scenarios)
+ * ---------------------------------------------------- */
+
+// User or AI message shown in chat simulation
+export type ChatMessageUserAi = {
+  id: string;
+  role: "user" | "ai";
+  text: string;
+};
+
+// Ad-injected message
+export type ChatMessageAd = {
+  id: string;
+  role: "ad";
+  ad: Ad;
+  requestId: string | null;
+};
+
+// Unified type
+export type ChatMessage = ChatMessageUserAi | ChatMessageAd;

@@ -3,11 +3,31 @@ import { db } from "@/lib/firebase-admin";
 import type { RequestLog } from "@/types";
 
 /**
+ * Shape of the ad returned from Firestore + advertiserName.
+ * This extends the base Ad with one extra field.
+ */
+interface DecidedAd {
+  id: string;
+  advertiserId: string;
+  advertiserName: string;
+  format: "action_card";
+  title: string;
+  description: string;
+  ctaText: string;
+  ctaUrl: string;
+  tags: string[];
+  status: "active" | "paused" | "archived";
+}
+
+/**
  * POST /api/request
  *
- * The main entrypoint for the Ceed Ads SDK.
- * Receives contextual text + identifiers, stores the request,
- * runs a minimal ad-decision process, and returns one ad (or null).
+ * Main entrypoint used by the Ceed Ads SDK.
+ * - Validates request
+ * - Fetches an active ad
+ * - Fetches advertiser data to attach name
+ * - Stores request log
+ * - Returns decided ad + requestId
  */
 export async function POST(req: NextRequest) {
   try {
@@ -49,14 +69,34 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .get();
 
-    const decidedAd = adsSnap.empty
-      ? null
-      : { id: adsSnap.docs[0].id, ...adsSnap.docs[0].data() };
+    let decidedAd: DecidedAd | null = null;
+
+    if (!adsSnap.empty) {
+      const raw = adsSnap.docs[0];
+      const rawAd = {
+        id: raw.id,
+        ...(raw.data() as Omit<DecidedAd, "id" | "advertiserName">),
+      };
+
+      // Fetch advertiser info
+      const advSnap = await db
+        .collection("advertisers")
+        .doc(rawAd.advertiserId)
+        .get();
+
+      const advData = advSnap.exists ? advSnap.data() : null;
+
+      decidedAd = {
+        ...rawAd,
+        advertiserName: advData?.name ?? "Advertiser",
+      };
+    }
 
     // ---------------------------------------------------------
     // 4. Store Request Log
     // ---------------------------------------------------------
     const now = new Date();
+
     const requestDoc: RequestLog = {
       appId,
       conversationId,
@@ -74,7 +114,7 @@ export async function POST(req: NextRequest) {
     if (sdkVersion) requestDoc.sdkVersion = sdkVersion;
     if (userId) requestDoc.userId = userId;
 
-    await db.collection("requests").add(requestDoc);
+    const requestRef = await db.collection("requests").add(requestDoc);
 
     // ---------------------------------------------------------
     // 5. Return response
@@ -83,6 +123,7 @@ export async function POST(req: NextRequest) {
       {
         ok: true,
         ad: decidedAd ?? null,
+        requestId: requestRef.id,
       },
       { status: 200 },
     );

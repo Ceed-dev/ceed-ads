@@ -47,69 +47,115 @@ export function renderActionCard(
   requestId: string | null,
 ): RenderedAd {
   /* ------------------------------
-   * 1. Create root card container
+   * Root Card
    * ------------------------------ */
   const card = createElement("div", "ceed-ads-card");
-  card.style.border = "1px solid #ddd";
-  card.style.padding = "12px";
-  card.style.borderRadius = "8px";
-  card.style.margin = "8px 0";
-  card.style.background = "#fff";
-  card.style.maxWidth = "360px";
-  card.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08)";
+  card.style.border = "1px solid rgba(255,255,255,0.12)";
+  card.style.padding = "20px";
+  card.style.borderRadius = "12px";
+  card.style.margin = "16px 0";
+  card.style.background = "#141414";
+  card.style.maxWidth = "460px";
+  card.style.boxShadow = "0 2px 8px rgba(0,0,0,0.35)";
+  card.style.color = "#e5e5e5";
 
   /* ------------------------------
-   * 2. Title
+   * Header (Advertiser + Icon + Ad label)
    * ------------------------------ */
-  const titleEl = createElement("div", "ceed-ads-title");
+  const header = createElement("div");
+  header.style.display = "flex";
+  header.style.alignItems = "center";
+  header.style.justifyContent = "space-between";
+  header.style.marginBottom = "14px";
+
+  const left = createElement("div");
+  left.style.display = "flex";
+  left.style.alignItems = "center";
+  left.style.gap = "8px";
+
+  const dot = createElement("div");
+  dot.style.width = "10px";
+  dot.style.height = "10px";
+  dot.style.background = "#3a82f7";
+  dot.style.borderRadius = "50%";
+
+  const advName = createElement("div");
+  advName.textContent = ad.advertiserName ?? "Advertiser";
+  advName.style.fontSize = "14px";
+  advName.style.opacity = "0.9";
+
+  left.appendChild(dot);
+  left.appendChild(advName);
+
+  const adLabel = createElement("div");
+  adLabel.textContent = "Ad";
+  adLabel.style.fontSize = "14px";
+  adLabel.style.opacity = "0.55";
+
+  header.appendChild(left);
+  header.appendChild(adLabel);
+  card.appendChild(header);
+
+  /* ------------------------------
+   * Title
+   * ------------------------------ */
+  const titleEl = createElement("div");
   titleEl.textContent = ad.title;
-  titleEl.style.fontSize = "16px";
+  titleEl.style.fontSize = "19px";
   titleEl.style.fontWeight = "600";
-  titleEl.style.marginBottom = "6px";
+  titleEl.style.marginBottom = "10px";
+  titleEl.style.lineHeight = "1.35";
   card.appendChild(titleEl);
 
   /* ------------------------------
-   * 3. Description
+   * Description
    * ------------------------------ */
-  const descEl = createElement("div", "ceed-ads-description");
+  const descEl = createElement("div");
   descEl.textContent = ad.description;
   descEl.style.fontSize = "14px";
-  descEl.style.color = "#444";
-  descEl.style.marginBottom = "10px";
+  descEl.style.opacity = "0.8";
+  descEl.style.marginBottom = "18px";
+  descEl.style.lineHeight = "1.45";
   card.appendChild(descEl);
 
   /* ------------------------------
-   * 4. CTA Button
+   * CTA Button
    * ------------------------------ */
-  const button = createElement("button", "ceed-ads-cta");
+  const button = createElement("button");
   button.textContent = ad.ctaText;
   button.style.width = "100%";
-  button.style.padding = "10px";
-  button.style.background = "#0066ff";
+  button.style.padding = "14px";
+  button.style.background = "#3a82f7";
   button.style.color = "#fff";
   button.style.border = "none";
-  button.style.borderRadius = "6px";
+  button.style.borderRadius = "8px";
   button.style.cursor = "pointer";
   button.style.fontSize = "15px";
+  button.style.fontWeight = "500";
+  button.style.marginTop = "6px";
+
+  button.onmouseenter = () => {
+    button.style.background = "#2f6ad4";
+  };
+  button.onmouseleave = () => {
+    button.style.background = "#3a82f7";
+  };
 
   card.appendChild(button);
 
   /* ------------------------------
-   * 5. Append card to target element
+   * Inject
    * ------------------------------ */
   targetElement.appendChild(card);
 
   /* ------------------------------
-   * 6. Track impression automatically
+   * Tracking
    * ------------------------------ */
   trackImpression(ad, requestId);
 
-  /* ------------------------------
-   * 7. Track click + open landing page
-   * ------------------------------ */
   button.addEventListener("click", async () => {
     await trackClick(ad, requestId);
-    window.location.href = ad.ctaUrl;
+    window.open(ad.ctaUrl, "_blank");
   });
 
   return {

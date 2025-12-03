@@ -7,9 +7,9 @@
 // The SDK will detect this keyword later.
 // -----------------------------------------------------------------------------
 
-import type { ChatMessage } from "../page";
+import type { ChatMessageUserAi } from "@/sdk/core/types";
 
-export const programmingScenario: ChatMessage[] = [
+export const programmingScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",

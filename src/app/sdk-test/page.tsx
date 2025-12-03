@@ -1,36 +1,61 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { initialize, requestAd, renderAd } from "@/sdk";
+import type { Ad, ChatMessage } from "@/sdk/core/types";
 
 /* ------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------*/
-export type ChatMessage = {
+type ChatMessageUserAi = {
   id: string;
   role: "user" | "ai";
   text: string;
 };
 
+type ChatMessageAd = {
+  id: string;
+  role: "ad";
+  ad: Ad;
+  requestId: string | null;
+};
+
 /* ------------------------------------------------------------------
- * Scenario imports
+ * Scenarios
  * ------------------------------------------------------------------*/
 import { englishScenario, programmingScenario, travelScenario } from "./_data";
 
-/* ------------------------------------------------------------------
- * Scenario keyword map (simple rule-based matching)
- * ------------------------------------------------------------------*/
 const scenarioKeywords = [
   { scenario: "english", keywords: ["english", "speaking", "pronunciation"] },
   { scenario: "programming", keywords: ["code", "python", "programming"] },
   { scenario: "travel", keywords: ["travel", "vacation", "hotel", "okinawa"] },
 ];
 
-/* Scenario lookup table */
-const scenarioTable: Record<string, ChatMessage[]> = {
+const scenarioTable: Record<string, ChatMessageUserAi[]> = {
   english: englishScenario,
   programming: programmingScenario,
   travel: travelScenario,
 };
+
+/* ------------------------------------------------------------------
+ * Inline Ad Card
+ * ------------------------------------------------------------------*/
+function InlineAdCard({ ad, requestId }: { ad: Ad; requestId: string | null }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  /* Render SDK card into the container */
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = "";
+    renderAd(ad, containerRef.current, requestId);
+  }, [ad, requestId]);
+
+  return (
+    <div className="flex justify-start my-4">
+      <div ref={containerRef} />
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------
  * Page Component
@@ -48,13 +73,18 @@ export default function SdkTestPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    // Init SDK once on page load
+    initialize("test-app", "/api");
+  }, []);
+
   /* Auto-scroll to bottom */
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   /* ------------------------------------------------------------------
-   * 1. Detect scenario on first input
+   * Detect scenario on first input
    * ------------------------------------------------------------------*/
   const detectScenario = (text: string): string | null => {
     const lower = text.toLowerCase();
@@ -67,10 +97,10 @@ export default function SdkTestPage() {
   };
 
   /* ------------------------------------------------------------------
-   * 2. Append a new message to the chat
+   * Push chat message
    * ------------------------------------------------------------------*/
   const pushMessage = (role: "user" | "ai", text: string) => {
-    const msg: ChatMessage = {
+    const msg: ChatMessageUserAi = {
       id: crypto.randomUUID(),
       role,
       text,
@@ -79,7 +109,20 @@ export default function SdkTestPage() {
   };
 
   /* ------------------------------------------------------------------
-   * 3. Fallback response (no scenario matched)
+   * Push ad card into chat
+   * ------------------------------------------------------------------*/
+  const pushAd = (ad: Ad, requestId: string | null) => {
+    const msg: ChatMessageAd = {
+      id: crypto.randomUUID(),
+      role: "ad",
+      ad,
+      requestId,
+    };
+    setMessages((prev) => [...prev, msg]);
+  };
+
+  /* ------------------------------------------------------------------
+   * Fallback response (no scenario matched)
    * ------------------------------------------------------------------*/
   const fallbackReply = () => {
     pushMessage(
@@ -89,14 +132,14 @@ export default function SdkTestPage() {
   };
 
   /* ------------------------------------------------------------------
-   * 4. Scenario ending response
+   * Scenario ending response
    * ------------------------------------------------------------------*/
   const scenarioFinishedReply = () => {
     pushMessage("ai", "Thanks! Let me know if you need anything else.");
   };
 
   /* ------------------------------------------------------------------
-   * 5. Main send handler (with thinking animation + delay)
+   * Main send handler (with thinking animation + delay)
    * ------------------------------------------------------------------*/
   const handleSend = () => {
     if (!input.trim()) return;
@@ -105,43 +148,59 @@ export default function SdkTestPage() {
     pushMessage("user", userText);
     setInput("");
 
-    /* If scenario not chosen yet → detect scenario */
+    /* Request and enqueue ad after AI reply */
+    const showAdAfterReply = () => {
+      requestAd({
+        conversationId: "demo-conv",
+        messageId: crypto.randomUUID(),
+        contextText: userText,
+      })
+        .then(({ ad, requestId }) => {
+          if (ad) {
+            pushAd(ad, requestId ?? null);
+          }
+        })
+        .catch((err) => console.error("Ad request error:", err));
+    };
+
+    /* Scenario not chosen → detect scenario */
     if (!currentScenario) {
       const detected = detectScenario(userText);
 
       if (!detected) {
-        // No scenario matched → fallback AI response
         setIsThinking(true);
         const delay = Math.floor(700 + Math.random() * 600);
 
         setTimeout(() => {
           setIsThinking(false);
           fallbackReply();
+          showAdAfterReply();
         }, delay);
 
         return;
       }
 
-      // Scenario matched
       setCurrentScenario(detected);
       setScenarioIndex(0);
 
-      // Respond with the first AI message of the scenario (with delay)
       const scenario = scenarioTable[detected];
+      const firstAi = scenario[1];
+      if (!firstAi) return;
 
       setIsThinking(true);
       const delay = Math.floor(700 + Math.random() * 600);
 
       setTimeout(() => {
         setIsThinking(false);
-        pushMessage("ai", scenario[1].text); // a1
-        setScenarioIndex(2); // next AI index → scenario[3]
+        pushMessage("ai", firstAi.text);
+        setScenarioIndex(2);
+        showAdAfterReply();
       }, delay);
 
       return;
     }
 
-    /* If scenario is active but finished */
+    /* Scenario active but finished */
     const scenario = scenarioTable[currentScenario];
     if (scenarioIndex >= scenario.length) {
       setIsThinking(true);
@@ -150,13 +209,15 @@ export default function SdkTestPage() {
       setTimeout(() => {
         setIsThinking(false);
         scenarioFinishedReply();
+        showAdAfterReply();
       }, delay);
 
       return;
     }
 
-    /* Return next AI line in the scenario (with delay) */
+    /* Normal scenario progression */
     const nextAi = scenario[scenarioIndex];
+    if (!nextAi) return;
 
     setIsThinking(true);
     const delay = Math.floor(700 + Math.random() * 600);
@@ -165,6 +226,7 @@ export default function SdkTestPage() {
       setIsThinking(false);
       pushMessage("ai", nextAi.text);
       setScenarioIndex((prev) => prev + 2);
+      showAdAfterReply();
     }, delay);
   };
 
@@ -179,24 +241,28 @@ export default function SdkTestPage() {
           <p className="text-center text-gray-500">Chat will appear here...</p>
         )}
 
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={`flex ${
-              m.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+        {messages.map((m) =>
+          m.role === "ad" ? (
+            <InlineAdCard key={m.id} ad={m.ad} requestId={m.requestId} />
+          ) : (
             <div
-              className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
-                m.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-200"
+              key={m.id}
+              className={`flex ${
+                m.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {m.text}
+              <div
+                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
+                  m.role === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 text-gray-200"
+                }`}
+              >
+                {m.text}
+              </div>
             </div>
-          </div>
-        ))}
+          ),
+        )}
 
         {/* AI thinking indicator */}
         {isThinking && (

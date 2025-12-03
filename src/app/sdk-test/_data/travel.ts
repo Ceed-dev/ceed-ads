@@ -9,9 +9,9 @@
 //
 // -----------------------------------------------------------------------------
 
-import type { ChatMessage } from "../page";
+import type { ChatMessageUserAi } from "@/sdk/core/types";
 
-export const travelScenario: ChatMessage[] = [
+export const travelScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",

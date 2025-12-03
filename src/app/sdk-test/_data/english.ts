@@ -5,9 +5,9 @@
 // in the later stage to trigger ad injection via the SDK.
 // -----------------------------------------------------------------------------
 
-import type { ChatMessage } from "../page";
+import type { ChatMessageUserAi } from "@/sdk/core/types";
 
-export const englishScenario: ChatMessage[] = [
+export const englishScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",

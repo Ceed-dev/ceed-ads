@@ -86,13 +86,14 @@ export async function requestAd(
   const response = await postJSON<{
     ok: boolean;
     ad: Ad | null;
+    requestId: string | null;
   }>(url, mergedPayload);
 
   // NOTE: In MVP, requestId is stored in Firestore
   // but not yet returned by API. We return null for now.
   return {
     ad: response.ad,
-    requestId: null, // Will be supported when backend returns it
+    requestId: response.requestId,
   };
 }
 

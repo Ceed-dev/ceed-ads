@@ -54,9 +54,13 @@ export async function requestAd(options: {
   messageId: string;
   contextText: string;
   userId?: string;
-}): Promise<Ad | null> {
-  const { ad } = await clientRequestAd(options);
-  return ad ?? null;
+}): Promise<{ ad: Ad | null; requestId: string | null }> {
+  const result = await clientRequestAd(options);
+
+  return {
+    ad: result.ad ?? null,
+    requestId: result.requestId ?? null,
+  };
 }
 
 /* ----------------------------------------------------
