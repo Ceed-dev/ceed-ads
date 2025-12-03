@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 /* ------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------*/
-type ChatMessage = {
+export type ChatMessage = {
   id: string;
   role: "user" | "ai";
   text: string;
