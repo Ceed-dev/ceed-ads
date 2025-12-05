@@ -7,6 +7,24 @@ import {
 } from "@/lib/ads/deciders/keywordBased";
 import type { Timestamp } from "firebase-admin/firestore";
 
+/* --------------------------------------------------------------------------
+ * CORS CONFIG
+ * --------------------------------------------------------------------------*/
+const ALLOWED_ORIGIN = "*"; // MVP: allow all origins (SDK users)
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+/**
+ * OPTIONS /api/requests
+ * Needed for browser-based requests from external web apps using the SDK.
+ */
+export function OPTIONS() {
+  return NextResponse.json({}, { status: 204, headers: CORS_HEADERS });
+}
+
 /**
  * POST /api/requests
  *
@@ -42,7 +60,7 @@ export async function POST(req: NextRequest) {
     if (!appId || !conversationId || !messageId || !contextText) {
       return NextResponse.json(
         { ok: false, error: "Missing required fields" },
-        { status: 400 },
+        { status: 400, headers: CORS_HEADERS },
       );
     }
 
@@ -123,14 +141,14 @@ export async function POST(req: NextRequest) {
         ad: decidedAd ?? null,
         requestId: requestRef.id,
       },
-      { status: 200 },
+      { status: 200, headers: CORS_HEADERS },
     );
   } catch (err) {
     console.error("Error in /api/request:", err);
 
     return NextResponse.json(
       { ok: false, error: "Internal Server Error" },
-      { status: 500 },
+      { status: 500, headers: CORS_HEADERS },
     );
   }
 }

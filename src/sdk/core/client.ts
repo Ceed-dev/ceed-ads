@@ -25,13 +25,22 @@ const config: SDKConfig = {
    * Default SDK configuration.
    *
    * NOTE:
-   * - `apiBaseUrl` defaults to "/api" for local development inside the Ceed Ads monorepo.
-   * - After deploying the backend (e.g., to Vercel), this value must be updated
-   *   to the production API URL (e.g., "https://yourdomain.com/api").
-   * - External developers typically should NOT change this value unless
-   *   they are using a custom proxy or local testing environment.
+   * - External developers normally do NOT need to modify `apiBaseUrl`.
+   *   When integrating the SDK, they only call:
+   *       initialize(appId)
+   *   and the SDK will automatically communicate with the production backend.
+   *
+   * - During internal development (e.g., testing inside this monorepo),
+   *   `apiBaseUrl` can be overridden via:
+   *       initialize(appId, "/api")
+   *   so that requests are routed to the local Next.js API routes instead of
+   *   the deployed production endpoint.
+   *
+   * - In short:
+   *      • External usage → initialize(appId) only.
+   *      • Internal local testing → initialize(appId, "/api").
    */
-  apiBaseUrl: "/api",
+  apiBaseUrl: "https://ceed-ads.vercel.app/api",
   sdkVersion: "1.0.0",
   initialized: false,
 };

@@ -42,7 +42,7 @@ import type { Ad } from "./core/types";
  * Behavior:
  * - `appId` is required.
  * - `apiBaseUrl` is optional.
- *   - If omitted, the SDK uses the internal default ("/api").
+ *   - If omitted, the SDK uses the internal default ("https://ceed-ads.vercel.app/api").
  *   - External developers normally do NOT set this.
  *   - Developers of Ceed Ads may override it for local testing
  *     or production deployments.
