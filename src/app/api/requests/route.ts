@@ -22,7 +22,7 @@ const CORS_HEADERS = {
  * Needed for browser-based requests from external web apps using the SDK.
  */
 export function OPTIONS() {
-  return NextResponse.json({}, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 /**

@@ -17,7 +17,7 @@ const CORS_HEADERS = {
  * Required for browser-based SDK requests (CORS preflight)
  */
 export function OPTIONS() {
-  return NextResponse.json({}, { status: 204, headers: CORS_HEADERS });
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 /**
