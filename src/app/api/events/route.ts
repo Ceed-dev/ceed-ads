@@ -2,7 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase-admin";
 import type { EventLog, EventType } from "@/types";
 
+/* --------------------------------------------------------------------------
+ * CORS CONFIG
+ * --------------------------------------------------------------------------*/
+const ALLOWED_ORIGIN = "*"; // MVP: allow all SDK integrations
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
 /**
+ * OPTIONS /api/events
+ * Required for browser-based SDK requests (CORS preflight)
+ */
+export function OPTIONS() {
+  return NextResponse.json({}, { status: 204, headers: CORS_HEADERS });
+}
+
+/**
+ * Utility:
  * Removes any keys with `undefined` values.
  * Ensures the resulting object is Firestore-safe.
  */
@@ -51,7 +70,7 @@ export async function POST(req: NextRequest) {
     if (!type || !adId || !advertiserId || !requestId) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400, headers: CORS_HEADERS },
       );
     }
 
@@ -60,7 +79,7 @@ export async function POST(req: NextRequest) {
     if (!validTypes.includes(type)) {
       return NextResponse.json(
         { error: "Invalid event type" },
-        { status: 400 },
+        { status: 400, headers: CORS_HEADERS },
       );
     }
 
@@ -97,13 +116,13 @@ export async function POST(req: NextRequest) {
         success: true,
         eventId: ref.id,
       },
-      { status: 200 },
+      { status: 200, headers: CORS_HEADERS },
     );
   } catch (err) {
     console.error("POST /api/events error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500, headers: CORS_HEADERS },
     );
   }
 }

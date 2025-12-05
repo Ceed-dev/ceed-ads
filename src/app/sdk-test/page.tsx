@@ -109,18 +109,22 @@ export default function SdkTestPage() {
     /**
      * NOTE FOR DEVELOPERS:
      * ---------------------
-     * In real SDK integration:
-     *    initialize("your-app-id")
-     * is usually all you need.
+     * In normal SDK integration:
+     *     initialize("your-app-id")
+     * is the only required setup. The SDK will automatically use the
+     * built-in production `apiBaseUrl`, so developers do NOT need to
+     * configure any URL manually.
      *
-     * This demo intentionally passes "/api" as the second argument to force
-     * the SDK to use the *local* API routes defined inside this monorepo.
+     * In this demo:
+     * We simply call `initialize("test-app")` and let the SDK use its
+     * internal production URL or any locally overridden value.
      *
-     * Even after deploying the production backend (e.g., Vercel), this demo
-     * will continue to work because explicitly passing "/api" overrides the
-     * default production apiBaseUrl.
+     * If you want to force the SDK to use local API routes during development,
+     * you can optionally provide:
+     *     initialize("your-app-id", "/api")
+     * which overrides the default production URL *only for testing*.
      */
-    initialize("test-app", "/api");
+    initialize("test-app");
   }, []);
 
   // Scroll
