@@ -49,7 +49,18 @@ export function initTracker(options: {
  * ---------------------------------------------------- */
 
 /**
+ * A set used to prevent duplicate impression tracking.
+ * React StrictMode renders components twice in development,
+ * which can cause impression events to fire multiple times.
+ *
+ * We store a unique key (adId + requestId) and ignore any
+ * subsequent impression calls for the same ad instance.
+ */
+const sentImpressions = new Set<string>();
+
+/**
  * Sends an impression event when an ad becomes visible.
+ * Ensures that each ad/requestId pair only sends one impression.
  */
 export async function trackImpression(ad: Ad, requestId: string | null) {
   if (!appId) {
@@ -58,6 +69,16 @@ export async function trackImpression(ad: Ad, requestId: string | null) {
   if (!requestId) {
     console.warn("trackImpression: requestId is null (MVP limitation)");
   }
+
+  // Unique key identifying this ad instance
+  const key = `${ad.id}:${requestId}`;
+
+  // Prevent duplicate impressions (e.g., React StrictMode double render)
+  if (sentImpressions.has(key)) {
+    return;
+  }
+
+  sentImpressions.add(key);
 
   const payload: EventPayload = {
     type: "impression",

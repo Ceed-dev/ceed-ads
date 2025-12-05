@@ -4,10 +4,23 @@
  * ----------------------------------------------------
  *
  * This file exposes the SDK's public API:
+ *
  *   - initialize(appId)
+ *       → Sets up the SDK with your app ID and prepares internal state.
+ *
  *   - requestAd(options)
+ *       → Fetches an ad from the backend based on conversation context.
+ *         (Does NOT render anything.)
+ *
  *   - renderAd(ad, target)
+ *       → Renders a given Ad object into a target DOM element.
+ *         (Assumes you already fetched the ad.)
+ *
  *   - showAd(options)
+ *       → Convenience method that:
+ *            1. Fetches an ad
+ *            2. Renders it into the target
+ *            3. Automatically tracks impression & click events
  *
  * Internal modules:
  *   client.ts   → API communication
@@ -21,21 +34,34 @@ import { renderActionCard } from "./core/renderer";
 import type { Ad } from "./core/types";
 
 /* ----------------------------------------------------
- * 1. Public: initialize(appId)
- * ---------------------------------------------------- */
-
-/**
- * Initializes the SDK with required global settings.
- * Must be called before using any other function.
+ * 1. Public: initialize(appId, apiBaseUrl?)
+ * ----------------------------------------------------
+ *
+ * Initializes the Ceed Ads SDK.
+ *
+ * Behavior:
+ * - `appId` is required.
+ * - `apiBaseUrl` is optional.
+ *   - If omitted, the SDK uses the internal default ("/api").
+ *   - External developers normally do NOT set this.
+ *   - Developers of Ceed Ads may override it for local testing
+ *     or production deployments.
+ *
+ * After initialization:
+ * - All requests sent by the SDK include the provided appId.
+ * - Tracker is configured with app-level identifiers.
  */
-export function initialize(appId: string, apiBaseUrl = "/api") {
+
+export function initialize(appId: string, apiBaseUrl?: string) {
   if (!appId) {
     throw new Error("CeedAds.initialize: appId is required");
   }
 
+  // Initialize HTTP client configuration.
+  // If apiBaseUrl is undefined, client.ts falls back to its internal default.
   initClient(appId, apiBaseUrl);
 
-  // Tracker keeps global identifiers for event payloads
+  // Initialize event tracker (stores global identifiers).
   initTracker({ appId });
 
   console.log(`[CeedAds] Initialized with appId=${appId}`);

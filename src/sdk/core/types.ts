@@ -13,12 +13,12 @@
  */
 
 /* ----------------------------------------------------
- * 1. Ad (Returned from /api/request)
+ * 1. Ad (Returned from /api/requests)
  * ---------------------------------------------------- */
 
 /**
  * Represents a single Action Card ad.
- * Returned by `/api/request` and used for rendering.
+ * Returned by `/api/requests` and used for rendering.
  */
 export interface Ad {
   id: string; // Firestore document ID
@@ -34,7 +34,7 @@ export interface Ad {
 }
 
 /* ----------------------------------------------------
- * 2. Request Payload (SDK → /api/request)
+ * 2. Request Payload (SDK → /api/requests)
  * ---------------------------------------------------- */
 
 /**

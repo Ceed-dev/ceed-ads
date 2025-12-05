@@ -2,12 +2,12 @@
  * Defines the Firestore document structure and domain types
  * for ad-request logs within the Ceed Ads platform.
  *
- * A request represents a single call from the SDK (or AI client)
- * to the `/ads/decide` endpoint, including the context that triggered
- * the request and the result of the ad-decision process.
+ * A request represents a single call from the SDK or AI client
+ * to the `/api/requests` endpoint, including the context that triggered
+ * the call and the decision result returned by the backend.
  *
- * This schema is designed to be minimal for early development
- * while still supporting future analytics and debugging needs.
+ * This schema is intentionally minimal for the MVP while still allowing
+ * future expansion (e.g., attribution, model diagnostics, or richer context).
  */
 
 export type RequestId = string;
@@ -27,7 +27,7 @@ export interface RequestMeta {
  * Firestore document shape for `requests/{requestId}`.
  *
  * Captures the context, identifiers, and decision outcome for each
- * invocation of `/ads/decide`. This data allows later analysis of
+ * invocation of `/api/requests`. This data allows later analysis of
  * contextual performance, model accuracy, and SDK/AI integration behavior.
  */
 export interface RequestLog {

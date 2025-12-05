@@ -5,7 +5,7 @@
  * Given a user's message (contextText), this function:
  *   1. Fetches all active ads from Firestore
  *   2. Normalizes text (lowercase)
- *   3. Checks partial keyword matches between contextText and ad.tags
+ *   3. Checks exact keyword matches (word-level) between contextText and ad.tags
  *   4. Scores each ad based on number of matched tags
  *   5. Returns the highest-scoring ad
  *      - If multiple ads tie → randomly pick one
@@ -17,7 +17,7 @@
  */
 
 import { db } from "@/lib/firebase-admin";
-import type { Ad } from "@/types/ad"; // adjust path if needed
+import type { Ad } from "@/types";
 
 /**
  * Ad decided by keyword logic (includes Firestore ID + advertiserName).
@@ -37,14 +37,27 @@ function normalize(s: string): string {
 }
 
 /**
- * Check if a single tag is partially included in the context text.
- * Example:
- *   context: "looking for hotels"
- *   tag: "hotel"
- *   → match (because "hotel" is included inside "hotels")
+ * Check if a tag matches the context text using **exact word matching**.
+ *
+ * Why exact matching?
+ * - Using `includes()` caused false positives (e.g., "daily" contains "ai")
+ * - To avoid accidental ad triggering, we match only whole words
+ *
+ * Behavior:
+ *   context: "I want a nice hotel"
+ *   words: ["i", "want", "a", "nice", "hotel"]
+ *   tag: "hotel" → match
+ *
+ *   context: "daily practice"
+ *   words: ["daily", "practice"]
+ *   tag: "ai" → NOT match (avoids false-positive)
  */
 function tagMatchesContext(context: string, tag: string): boolean {
-  return context.includes(tag);
+  // Split the normalized context into words (removes punctuation)
+  const words = context.split(/\W+/);
+
+  // Exact word match (case-insensitive because normalize() handles casing)
+  return words.includes(tag);
 }
 
 /**

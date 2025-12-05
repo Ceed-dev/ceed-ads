@@ -14,7 +14,7 @@ export * from "./advertiser";
 // Ads (creative definitions)
 export * from "./ad";
 
-// Request logs (/ads/decide calls)
+// Request logs (/api/requests calls)
 export * from "./request";
 
 // Event logs (impressions & clicks)

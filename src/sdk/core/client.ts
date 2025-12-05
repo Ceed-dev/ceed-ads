@@ -7,7 +7,7 @@
  * SDK to the Ceed Ads backend API.
  *
  * Responsibilities:
- *  - POST /api/request  (fetch an ad)
+ *  - POST /api/requests  (fetch an ad)
  *  - POST /api/events   (send impression/click)
  *
  * No DOM operations, no event logic. Pure networking only.
@@ -21,8 +21,18 @@ import type { Ad, RequestPayload, EventPayload, SDKConfig } from "./types";
 
 const config: SDKConfig = {
   appId: null,
+  /**
+   * Default SDK configuration.
+   *
+   * NOTE:
+   * - `apiBaseUrl` defaults to "/api" for local development inside the Ceed Ads monorepo.
+   * - After deploying the backend (e.g., to Vercel), this value must be updated
+   *   to the production API URL (e.g., "https://yourdomain.com/api").
+   * - External developers typically should NOT change this value unless
+   *   they are using a custom proxy or local testing environment.
+   */
   apiBaseUrl: "/api",
-  sdkVersion: "0.1.0",
+  sdkVersion: "1.0.0",
   initialized: false,
 };
 
@@ -54,15 +64,19 @@ async function postJSON<T>(url: string, data: unknown): Promise<T> {
  * Called from SDK.initialize()
  * ---------------------------------------------------- */
 
-export function initClient(appId: string, apiBaseUrl = "/api") {
+export function initClient(appId: string, apiBaseUrl?: string) {
   config.appId = appId;
-  config.apiBaseUrl = apiBaseUrl;
   config.initialized = true;
+
+  // Allow override only when a value is explicitly provided
+  if (apiBaseUrl) {
+    config.apiBaseUrl = apiBaseUrl;
+  }
 }
 
 /* ----------------------------------------------------
  * Public: Request an Ad
- * Calls POST /api/request
+ * Calls POST /api/requests
  * ---------------------------------------------------- */
 
 /**
@@ -81,7 +95,7 @@ export async function requestAd(
     sdkVersion: config.sdkVersion,
   };
 
-  const url = `${config.apiBaseUrl}/request`;
+  const url = `${config.apiBaseUrl}/requests`;
 
   const response = await postJSON<{
     ok: boolean;
@@ -89,8 +103,7 @@ export async function requestAd(
     requestId: string | null;
   }>(url, mergedPayload);
 
-  // NOTE: In MVP, requestId is stored in Firestore
-  // but not yet returned by API. We return null for now.
+  // requestId is returned by the backend and used for event tracking.
   return {
     ad: response.ad,
     requestId: response.requestId,

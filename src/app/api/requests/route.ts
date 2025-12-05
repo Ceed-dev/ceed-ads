@@ -8,7 +8,7 @@ import {
 import type { Timestamp } from "firebase-admin/firestore";
 
 /**
- * POST /api/request
+ * POST /api/requests
  *
  * Main entrypoint used by the Ceed Ads SDK.
  *
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
       conversationId,
       messageId,
       contextText,
-      language = "ja",
+      language = "en",
       userId,
-      sdkVersion,
+      sdkVersion = "1.0.0",
     } = body;
 
     /* ------------------------------------------------------------------
