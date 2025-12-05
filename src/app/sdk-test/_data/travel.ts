@@ -15,42 +15,42 @@ export const travelScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",
-    text: "I'm thinking about taking a short vacation soon. Any suggestions for good destinations?",
+    text: "I'm thinking about taking some time off soon. Any ideas for places that might be refreshing?",
   },
   {
     id: "a1",
     role: "ai",
-    text: "It depends on what kind of experience you're looking for. Do you prefer relaxing beaches, cities, or nature?",
+    text: "It depends on the atmosphere you enjoy. Do you prefer quiet places, lively areas, or somewhere close to nature?",
   },
   {
     id: "u2",
     role: "user",
-    text: "I want somewhere relaxing but still with things to do. Maybe a warm place.",
+    text: "I want somewhere calm but still interesting. Ideally somewhere warm.",
   },
   {
     id: "a2",
     role: "ai",
-    text: "In that case, Hawaii or Okinawa could be great choices. They offer beautiful beaches along with sightseeing spots.",
+    text: "In that case, regions with mild climates could be a good fit. Many people enjoy spots where they can unwind but also explore a bit.",
   },
   {
     id: "u3",
     role: "user",
-    text: "I’ve actually never been to Okinawa. What’s the best time of year to visit?",
+    text: "I haven't really traveled much, so I'm open to new places. When is a good season to go somewhere warm?",
   },
   {
     id: "a3",
     role: "ai",
-    text: "Late spring or early autumn is ideal—good weather and fewer crowds.",
+    text: "Late spring or early autumn tends to be comfortable in many destinations—pleasant weather and not too crowded.",
   },
   {
     id: "u4",
     role: "user",
-    text: "Sounds perfect. I think I’ll go with Okinawa then.",
+    text: "That sounds nice. I think I'll pick a warm coastal area then.",
   },
   {
     id: "a4",
     role: "ai",
-    text: "Great choice. Do you already have dates in mind or are you still deciding?",
+    text: "Great. Are your dates already decided, or are you still thinking about it?",
   },
 
   // ---------------------------------------------------------------------------

@@ -14,42 +14,42 @@ export const englishScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",
-    text: "I want to improve my English speaking skills. Where should I start?",
+    text: "I want to get better at communicating in another language. Where should I begin?",
   },
   {
     id: "a1",
     role: "ai",
-    text: "A great first step is to build daily speaking habits. Even short self-talk or reading aloud can make a big difference.",
+    text: "A good start is to build daily speaking habits. Even short self-talk or reading aloud helps.",
   },
   {
     id: "u2",
     role: "user",
-    text: "How can I check whether my pronunciation is accurate?",
+    text: "How can I check whether my pronunciation sounds natural?",
   },
   {
     id: "a2",
     role: "ai",
-    text: "Recording your voice and comparing it to native speakers is surprisingly effective. You can also shadow YouTube videos or podcasts.",
+    text: "Recording your voice and comparing it with native speakers is very effective.",
   },
   {
     id: "u3",
     role: "user",
-    text: "I struggle with remembering new vocabulary. Do you have any tips?",
+    text: "I often forget new words I try to memorize. Any tips?",
   },
   {
     id: "a3",
     role: "ai",
-    text: "Using spaced repetition helps a lot. Apps like Anki or simple flashcards improve long-term retention.",
+    text: "Using spaced repetition is helpful. Simple flashcards can improve long-term memory.",
   },
   {
     id: "u4",
     role: "user",
-    text: "I also want to practice natural everyday conversation.",
+    text: "I also want to practice more natural interactions.",
   },
   {
     id: "a4",
     role: "ai",
-    text: "Then conversational practice is essential. Role-playing different scenarios is a very good way to build fluency.",
+    text: "Role-playing everyday scenes is a great way to build confidence and fluency.",
   },
 
   // ---------------------------------------------------------------------------

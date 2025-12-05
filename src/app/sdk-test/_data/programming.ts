@@ -14,42 +14,42 @@ export const programmingScenario: ChatMessageUserAi[] = [
   {
     id: "u1",
     role: "user",
-    text: "I want to start learning programming. What's the best language for beginners?",
+    text: "I'm thinking about getting into tech, but I'm not sure where to start. Any suggestions?",
   },
   {
     id: "a1",
     role: "ai",
-    text: "Python is one of the best choices for beginners. It's easy to read and widely used in many fields.",
+    text: "A good entry point is understanding basic problem-solving and logic. Many beginners start with simple tasks to build confidence.",
   },
   {
     id: "u2",
     role: "user",
-    text: "I see. Should I focus more on theory or projects first?",
+    text: "Should I focus more on understanding concepts first or try building something right away?",
   },
   {
     id: "a2",
     role: "ai",
-    text: "Starting with small hands-on projects helps a lot. You can pick up theory along the way.",
+    text: "Starting with small hands-on exercises works well. You can pick up the ideas behind them naturally over time.",
   },
   {
     id: "u3",
     role: "user",
-    text: "I often struggle to stay motivated. Any advice?",
+    text: "I sometimes lose motivation when things get too difficult. Any advice?",
   },
   {
     id: "a3",
     role: "ai",
-    text: "Set small achievable goals. Even solving one problem a day builds long-term momentum.",
+    text: "Setting small, clear goals helps. Even completing one simple task a day creates steady progress.",
   },
   {
     id: "u4",
     role: "user",
-    text: "What about debugging? I get stuck for hours sometimes.",
+    text: "What about fixing mistakes? I get stuck pretty easily.",
   },
   {
     id: "a4",
     role: "ai",
-    text: "Learning to read error messages carefully and isolating issues step-by-step makes debugging easier over time.",
+    text: "Breaking problems down and checking each part step by step usually helps reveal what's going wrong.",
   },
 
   // ---------------------------------------------------------------------------
