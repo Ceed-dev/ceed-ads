@@ -8,11 +8,14 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-// Prevent re-initializing Firebase Admin during hot reload (Next.js dev)
+const serviceAccount = JSON.parse(
+  process.env.GOOGLE_APPLICATION_CREDENTIALS as string,
+);
+
 const firebaseAdminApp =
   getApps().length === 0
     ? initializeApp({
-        credential: cert(process.env.GOOGLE_APPLICATION_CREDENTIALS as string),
+        credential: cert(serviceAccount),
       })
     : getApps()[0];
 
