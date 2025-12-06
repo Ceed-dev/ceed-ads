@@ -39,8 +39,16 @@ import { useState, useRef, useEffect } from "react";
 // ============================================================================
 // ⭐ SDK IMPORTS — Core entrypoints for Ceed Ads SDK
 // ============================================================================
-import { initialize, requestAd, renderAd } from "@/sdk";
-import type { Ad, ChatMessage, ChatMessageUserAi } from "@/sdk/core/types";
+// Local SDK source (used only during development)
+import { initialize, requestAd, renderAd } from "@/../sdk";
+
+// Local dist build (used for verifying the build output)
+// import { initialize, requestAd, renderAd } from "@/../sdk/dist";
+
+// Published SDK (official import for production)
+// import { initialize, requestAd, renderAd } from "@ceedhq/ads-web-sdk";
+
+import type { Ad, ChatMessage, ChatMessageUserAi } from "@/../sdk/core/types";
 
 // ============================================================================
 // Scenarios

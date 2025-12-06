@@ -8,7 +8,7 @@
 // will return an English-related ad at that point.
 // -----------------------------------------------------------------------------
 
-import type { ChatMessageUserAi } from "@/sdk/core/types";
+import type { ChatMessageUserAi } from "@/../sdk/core/types";
 
 export const englishScenario: ChatMessageUserAi[] = [
   {
