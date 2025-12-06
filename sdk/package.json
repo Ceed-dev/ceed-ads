@@ -1,0 +1,27 @@
+{
+  "name": "@ceedhq/ads-web-sdk",
+  "version": "1.0.3",
+  "description": "Ceed Ads TypeScript SDK for integrating contextual ads into chat applications.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "ads",
+    "sdk",
+    "contextual-ads",
+    "ai-ads",
+    "chatbot",
+    "ceed",
+    "monetization"
+  ],
+  "author": "Pochi",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

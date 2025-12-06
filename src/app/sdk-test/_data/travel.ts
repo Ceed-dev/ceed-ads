@@ -9,7 +9,7 @@
 // backend keyword-based ad decider will return a travel ad here.
 // -----------------------------------------------------------------------------
 
-import type { ChatMessageUserAi } from "@/sdk/core/types";
+import type { ChatMessageUserAi } from "@/../sdk/core/types";
 
 export const travelScenario: ChatMessageUserAi[] = [
   {

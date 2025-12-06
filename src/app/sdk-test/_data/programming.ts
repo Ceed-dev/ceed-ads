@@ -8,7 +8,7 @@
 // ad decider will return a relevant ad at that point.
 // -----------------------------------------------------------------------------
 
-import type { ChatMessageUserAi } from "@/sdk/core/types";
+import type { ChatMessageUserAi } from "@/../sdk/core/types";
 
 export const programmingScenario: ChatMessageUserAi[] = [
   {
