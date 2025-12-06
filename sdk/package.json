@@ -1,6 +1,6 @@
 {
   "name": "@ceedhq/ads-web-sdk",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "Ceed Ads TypeScript SDK for integrating contextual ads into chat applications.",
   "scripts": {
     "build": "tsc -p tsconfig.json"
