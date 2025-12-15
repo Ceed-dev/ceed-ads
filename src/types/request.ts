@@ -43,7 +43,7 @@ export interface RequestLog {
   /** Raw text context used for ad-decision. */
   contextText: string;
 
-  /** Language of the context (e.g., "ja", "en"). */
+  /** Language code detected by `franc` (e.g., "eng", "jpn"). */
   language?: string;
 
   /** ID of the ad selected by the decision logic (if any). */
