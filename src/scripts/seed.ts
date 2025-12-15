@@ -56,7 +56,7 @@ async function seed() {
 
   const existingAds = await adsRef
     .where("advertiserId", "==", advertiserId)
-    .where("title", "==", "Demo AI Course")
+    .where("format", "==", "action_card")
     .get();
 
   if (existingAds.empty) {
@@ -65,9 +65,15 @@ async function seed() {
     const adDoc: Ad = {
       advertiserId,
       format: "action_card",
-      title: "Demo AI Course",
-      description: "Experience a conversational AI course with a free trial.",
-      ctaText: "Start free trial",
+      title: {
+        eng: "Demo AI Course",
+      },
+      description: {
+        eng: "Experience a conversational AI course with a free trial.",
+      },
+      ctaText: {
+        eng: "Start free trial",
+      },
       ctaUrl: "https://example.com/signup",
       status: "active",
       tags: ["ai", "education", "trial"],
