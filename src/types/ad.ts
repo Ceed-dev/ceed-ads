@@ -27,6 +27,18 @@ export interface AdMeta {
 }
 
 /**
+ * Represents localized text keyed by language code.
+ * Language codes should follow `franc` output (e.g. "eng", "jpn").
+ *
+ * Example:
+ * {
+ *   eng: "Sign up now",
+ *   jpn: "今すぐ登録"
+ * }
+ */
+export type LocalizedText = Record<string, string>;
+
+/**
  * Firestore document shape for `ads/{adId}` (MVP).
  *
  * Only the essential fields required to serve a text-based Action Card
@@ -40,14 +52,14 @@ export interface Ad {
   /** Creative format: currently fixed to "action_card". */
   format: AdFormat;
 
-  /** Short title shown on the card. */
-  title: string;
+  /** Short title shown on the card (multi-language). */
+  title: LocalizedText;
 
-  /** Body text describing the offer or message. */
-  description: string;
+  /** Body text describing the offer or message (multi-language). */
+  description: LocalizedText;
 
-  /** CTA button label. */
-  ctaText: string;
+  /** CTA button label (multi-language). */
+  ctaText: LocalizedText;
 
   /** URL opened when the CTA is clicked. */
   ctaUrl: string;
