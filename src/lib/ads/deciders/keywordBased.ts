@@ -1,23 +1,25 @@
 /**
  * --------------------------------------------------------------------
- * Keyword-Based Ad Decider (MVP)
+ * Keyword-Based Ad Decider
  *
- * Given a user's message (contextText) and detected language, this function:
+ * Given a user's message and detected language, this function:
  *   1. Returns null if the language is not supported
- *   2. Fetches all active ads from Firestore
- *   3. Normalizes text (lowercase)
- *   4. Checks exact keyword matches (word-level) between contextText and ad.tags
- *   5. Scores each ad based on number of matched tags
- *   6. Returns the highest-scoring ad
- *      - If multiple ads tie → randomly pick one
- *   7. Returns null if no ad matches at all
+ *   2. Translates the message into English (if needed)
+ *   3. Normalizes the text (lowercase, trimmed)
+ *   4. Fetches all active ads from Firestore
+ *   5. Performs exact word-level keyword matching against ad tags
+ *   6. Scores ads by number of matched tags
+ *   7. Returns the highest-scoring ad
+ *      - If multiple ads tie, one is selected at random
+ *   8. Returns null if no ads match
  *
- * This file intentionally contains no API-specific logic.
- * It is a reusable pure function for selecting ads based on keywords.
+ * This file intentionally contains no API or request-handling logic.
+ * It is a reusable, deterministic function for keyword-based ad selection.
  * --------------------------------------------------------------------
  */
 
 import { db } from "@/lib/firebase-admin";
+import { toEnglish } from "./toEnglish";
 import type { Ad } from "@/types";
 
 /**
@@ -83,7 +85,8 @@ export async function decideAdByKeyword(
     return null;
   }
 
-  const normalizedContext = normalize(contextText);
+  const englishText = await toEnglish(contextText, language);
+  const normalizedContext = normalize(englishText);
 
   // --------------------------------------------------------------
   // 1. Fetch all active ads from Firestore
