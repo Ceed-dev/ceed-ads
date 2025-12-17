@@ -103,14 +103,14 @@ export async function POST(req: NextRequest) {
 
       if (!withinCooldown) {
         // Cooldown expired → run normal ad decision
-        decidedAd = await decideAdByKeyword(contextText);
+        decidedAd = await decideAdByKeyword(contextText, language);
       } else {
         // Cooldown active → do NOT show ad
         decidedAd = null;
       }
     } else {
       // No prior successful ads → run normal ad decision
-      decidedAd = await decideAdByKeyword(contextText);
+      decidedAd = await decideAdByKeyword(contextText, language);
     }
 
     /* ------------------------------------------------------------------

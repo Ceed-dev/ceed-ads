@@ -2,14 +2,15 @@
  * --------------------------------------------------------------------
  * Keyword-Based Ad Decider (MVP)
  *
- * Given a user's message (contextText), this function:
- *   1. Fetches all active ads from Firestore
- *   2. Normalizes text (lowercase)
- *   3. Checks exact keyword matches (word-level) between contextText and ad.tags
- *   4. Scores each ad based on number of matched tags
- *   5. Returns the highest-scoring ad
+ * Given a user's message (contextText) and detected language, this function:
+ *   1. Returns null if the language is not supported
+ *   2. Fetches all active ads from Firestore
+ *   3. Normalizes text (lowercase)
+ *   4. Checks exact keyword matches (word-level) between contextText and ad.tags
+ *   5. Scores each ad based on number of matched tags
+ *   6. Returns the highest-scoring ad
  *      - If multiple ads tie → randomly pick one
- *   6. Returns null if no ad matches at all
+ *   7. Returns null if no ad matches at all
  *
  * This file intentionally contains no API-specific logic.
  * It is a reusable pure function for selecting ads based on keywords.
@@ -18,6 +19,15 @@
 
 import { db } from "@/lib/firebase-admin";
 import type { Ad } from "@/types";
+
+/**
+ * Languages currently supported by the keyword-based ad decision logic.
+ *
+ * Ads will NOT be served for languages outside this set.
+ * Detection may return other valid language codes, but they are intentionally
+ * excluded here until proper support is added.
+ */
+const SUPPORTED_LANGUAGES = new Set(["eng", "jpn"]);
 
 /**
  * Ad decided by keyword logic (includes Firestore ID + advertiserName).
@@ -66,7 +76,13 @@ function tagMatchesContext(context: string, tag: string): boolean {
  */
 export async function decideAdByKeyword(
   contextText: string,
+  language: string,
 ): Promise<DecidedAd | null> {
+  // If language is not supported, do not return any ad
+  if (!SUPPORTED_LANGUAGES.has(language)) {
+    return null;
+  }
+
   const normalizedContext = normalize(contextText);
 
   // --------------------------------------------------------------
