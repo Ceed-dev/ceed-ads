@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       conversationId,
       messageId,
       contextText,
-      language = "en",
+      language = "eng",
       userId,
       sdkVersion = "1.0.0",
     } = body;
