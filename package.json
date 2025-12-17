@@ -10,6 +10,7 @@
     "seed": "tsx -r dotenv/config src/scripts/seed.ts"
   },
   "dependencies": {
+    "@google-cloud/translate": "^9.3.0",
     "dotenv": "^17.2.3",
     "firebase-admin": "^13.6.0",
     "franc": "^6.2.0",
