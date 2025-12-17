@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { franc } from "franc";
 import { db } from "@/lib/firebase-admin";
 import type { RequestLog } from "@/types";
 import {
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
       conversationId,
       messageId,
       contextText,
-      language = "eng",
       userId,
       sdkVersion = "1.0.0",
     } = body;
@@ -63,6 +63,12 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: CORS_HEADERS },
       );
     }
+
+    // Detect language on the server (source of truth)
+    const detected = franc(contextText);
+
+    // Store detected language (fallback only if undetermined)
+    const language = detected === "und" ? "eng" : detected;
 
     /* ------------------------------------------------------------------
      * 3. Ad Frequency Control (Cooldown)
