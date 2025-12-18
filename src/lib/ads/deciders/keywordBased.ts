@@ -9,9 +9,11 @@
  *   4. Fetches all active ads from Firestore
  *   5. Performs exact word-level keyword matching against ad tags
  *   6. Scores ads by number of matched tags
- *   7. Returns the highest-scoring ad
+ *   7. Selects the highest-scoring ad
  *      - If multiple ads tie, one is selected at random
- *   8. Returns null if no ads match
+ *   8. Resolves localized ad fields (title, description, CTA) to a single language
+ *   9. Returns a client-ready ad payload
+ *      - Returns null if no ads match
  *
  * This file intentionally contains no API or request-handling logic.
  * It is a reusable, deterministic function for keyword-based ad selection.
@@ -20,7 +22,7 @@
 
 import { db } from "@/lib/firebase-admin";
 import { toEnglish } from "./toEnglish";
-import type { Ad } from "@/types";
+import type { Ad, ResolvedAd } from "@/types";
 
 /**
  * Languages currently supported by the keyword-based ad decision logic.
@@ -30,14 +32,6 @@ import type { Ad } from "@/types";
  * excluded here until proper support is added.
  */
 const SUPPORTED_LANGUAGES = new Set(["eng", "jpn"]);
-
-/**
- * Ad decided by keyword logic (includes Firestore ID + advertiserName).
- */
-export interface DecidedAd extends Ad {
-  id: string; // Firestore document ID
-  advertiserName: string; // Resolved from advertisers/{advertiserId}
-}
 
 /**
  * Normalize a string for comparison.
@@ -79,7 +73,7 @@ function tagMatchesContext(context: string, tag: string): boolean {
 export async function decideAdByKeyword(
   contextText: string,
   language: string,
-): Promise<DecidedAd | null> {
+): Promise<ResolvedAd | null> {
   // If language is not supported, do not return any ad
   if (!SUPPORTED_LANGUAGES.has(language)) {
     return null;
@@ -144,7 +138,7 @@ export async function decideAdByKeyword(
     topCandidates[Math.floor(Math.random() * topCandidates.length)].ad;
 
   // --------------------------------------------------------------
-  // 5. Fetch advertiserName for the selected ad
+  // 5. Fetch advertiser name and resolve localized ad fields
   // --------------------------------------------------------------
   const advSnap = await db
     .collection("advertisers")
@@ -155,9 +149,21 @@ export async function decideAdByKeyword(
     ? (advSnap.data()?.name as string)
     : "Advertiser";
 
-  // Return final decided ad
+  const title = selected.title[language] ?? selected.title.eng;
+
+  const description =
+    selected.description[language] ?? selected.description.eng;
+
+  const ctaText = selected.ctaText[language] ?? selected.ctaText.eng;
+
   return {
-    ...selected,
+    id: selected.id,
+    advertiserId: selected.advertiserId,
     advertiserName,
-  } as DecidedAd;
+    format: selected.format,
+    title,
+    description,
+    ctaText,
+    ctaUrl: selected.ctaUrl,
+  };
 }
