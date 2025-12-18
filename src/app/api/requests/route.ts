@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { franc } from "franc";
 import { db } from "@/lib/firebase-admin";
 import type { RequestLog } from "@/types";
-import {
-  decideAdByKeyword,
-  type DecidedAd,
-} from "@/lib/ads/deciders/keywordBased";
+import { decideAdByKeyword } from "@/lib/ads/deciders/keywordBased";
+import type { ResolvedAd } from "@/types";
 import type { Timestamp } from "firebase-admin/firestore";
 
 /* --------------------------------------------------------------------------
@@ -33,10 +31,12 @@ export function OPTIONS() {
  *
  * Responsibilities:
  *  - Validate request payload
+ *  - Detect message language on the server
  *  - Apply per-conversation ad frequency control (cooldown)
  *  - Decide an ad using keyword-based logic
+ *    (including translation and localization)
  *  - Store request log in Firestore
- *  - Return decided ad + requestId
+ *  - Return a client-ready ad + requestId
  */
 export async function POST(req: NextRequest) {
   try {
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .get();
 
-    let decidedAd: DecidedAd | null = null;
+    let decidedAd: ResolvedAd | null = null;
 
     if (!latestSuccessSnap.empty) {
       // There is at least one previous successful ad shown in this conversation.
@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
       { status: 200, headers: CORS_HEADERS },
     );
   } catch (err) {
-    console.error("Error in /api/request:", err);
+    console.error("Error in /api/requests:", err);
 
     return NextResponse.json(
       { ok: false, error: "Internal Server Error" },
