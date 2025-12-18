@@ -73,3 +73,33 @@ export interface Ad {
   /** Metadata and timestamps. */
   meta: AdMeta;
 }
+
+/**
+ * Client-ready ad payload resolved to a single language.
+ * Returned by the ad decision logic and consumed by SDKs / clients.
+ */
+export interface ResolvedAd {
+  /** Firestore document ID of the ad. */
+  id: string;
+
+  /** ID of the advertiser owning this ad. */
+  advertiserId: string;
+
+  /** Human-readable advertiser name. */
+  advertiserName: string;
+
+  /** Creative format (currently only "action_card"). */
+  format: AdFormat;
+
+  /** Localized title resolved to a single language. */
+  title: string;
+
+  /** Localized description resolved to a single language. */
+  description: string;
+
+  /** Localized CTA label resolved to a single language. */
+  ctaText: string;
+
+  /** Destination URL opened when CTA is clicked. */
+  ctaUrl: string;
+}
