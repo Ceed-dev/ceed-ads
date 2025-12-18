@@ -40,7 +40,7 @@ import { useState, useRef, useEffect } from "react";
 // ⭐ SDK IMPORTS — Core entrypoints for Ceed Ads SDK
 // ============================================================================
 // Local SDK source (used only during development)
-import { initialize, requestAd, renderAd } from "@/../sdk";
+import { initialize, requestAd, renderAd } from "@/../sdk/index";
 
 // Local dist build (used for verifying the build output)
 // import { initialize, requestAd, renderAd } from "@/../sdk/dist";
@@ -48,7 +48,11 @@ import { initialize, requestAd, renderAd } from "@/../sdk";
 // Published SDK (official import for production)
 // import { initialize, requestAd, renderAd } from "@ceedhq/ads-web-sdk";
 
-import type { Ad, ChatMessage, ChatMessageUserAi } from "@/../sdk/core/types";
+import type {
+  ResolvedAd,
+  ChatMessage,
+  ChatMessageUserAi,
+} from "@/../sdk/core/types";
 
 // ============================================================================
 // Scenarios
@@ -70,7 +74,13 @@ const scenarioTable: Record<string, ChatMessageUserAi[]> = {
 // ============================================================================
 // Inline Ad Card Renderer
 // ============================================================================
-function InlineAdCard({ ad, requestId }: { ad: Ad; requestId: string | null }) {
+function InlineAdCard({
+  ad,
+  requestId,
+}: {
+  ad: ResolvedAd;
+  requestId: string | null;
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -164,7 +174,7 @@ export default function SdkTestPage() {
   };
 
   // Push ad card
-  const pushAd = (ad: Ad, requestId: string | null) => {
+  const pushAd = (ad: ResolvedAd, requestId: string | null) => {
     setMessages((prev) => [
       ...prev,
       {
@@ -322,16 +332,14 @@ export default function SdkTestPage() {
           ) : (
             <div
               key={m.id}
-              className={`flex ${
-                m.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
-                  m.role === "user"
+                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${m.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 text-gray-200"
-                }`}
+                  }`}
               >
                 {m.text}
               </div>

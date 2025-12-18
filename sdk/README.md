@@ -110,7 +110,7 @@ Returns:
 
 ```ts
 {
-  ad: Ad | null,
+  ad: ResolvedAd | null,
   requestId: string | null
 }
 ```
@@ -226,7 +226,7 @@ initialize("test-app", "/api");
 ## 📄 TypeScript Support
 
 ```ts
-import type { Ad } from "@ceedhq/ads-web-sdk";
+import type { ResolvedAd } from "@ceedhq/ads-web-sdk";
 ```
 
 ## 🪪 License
