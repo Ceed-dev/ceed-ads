@@ -1,5 +1,10 @@
 # Ceed Ads Web SDK
 
+> ⚠️ Language Support (Current)
+>
+> The Ceed Ads Web SDK currently supports **English and Japanese** for ad decisioning and creatives.  
+> Additional languages will be added in future releases.
+
 <a href="https://github.com/Ceed-dev/ceed-ads" target="_blank">
   📦 GitHub Repository
 </a>
