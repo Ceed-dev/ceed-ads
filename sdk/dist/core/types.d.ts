@@ -8,14 +8,20 @@
  * logic. Keeping types isolated improves clarity,
  * reusability, and maintainability across modules.
  *
- * The types here align directly with the server-side
- * API schema (ads, requests, events).
+ * The types here align with the client-facing API responses
+ * and request/event payloads. Firestore document schemas
+ * are intentionally not exposed to the SDK.
  */
 /**
- * Represents a single Action Card ad.
- * Returned by `/api/requests` and used for rendering.
+ * Client-ready ad payload.
+ * Returned from `/api/requests` and used by the SDK.
+ *
+ * This type intentionally excludes:
+ * - localization maps
+ * - internal matching tags
+ * - ad status / metadata
  */
-export interface Ad {
+export interface ResolvedAd {
     id: string;
     advertiserId: string;
     advertiserName: string;
@@ -24,8 +30,6 @@ export interface Ad {
     description: string;
     ctaText: string;
     ctaUrl: string;
-    tags: string[];
-    status: "active" | "paused" | "archived";
 }
 /**
  * Payload sent by the SDK when requesting an ad.
@@ -69,7 +73,7 @@ export interface SDKConfig {
  */
 export interface RenderedAd {
     rootElement: HTMLElement;
-    ad: Ad;
+    ad: ResolvedAd;
     requestId: string;
 }
 export type ChatMessageUserAi = {
@@ -80,7 +84,7 @@ export type ChatMessageUserAi = {
 export type ChatMessageAd = {
     id: string;
     role: "ad";
-    ad: Ad;
+    ad: ResolvedAd;
     requestId: string | null;
 };
 export type ChatMessage = ChatMessageUserAi | ChatMessageAd;

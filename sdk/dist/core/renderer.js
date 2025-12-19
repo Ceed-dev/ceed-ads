@@ -29,6 +29,9 @@ function createElement(tag, className) {
  * Renders an Action Card for the given ad and appends it
  * to the provided container element.
  *
+ * Assumes the ad is already resolved to a single language
+ * by the backend.
+ *
  * Returns:
  *   { rootElement, ad, requestId }
  *   Used later for event tracking.

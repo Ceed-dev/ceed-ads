@@ -57,7 +57,12 @@ import type {
 // ============================================================================
 // Scenarios
 // ============================================================================
-import { englishScenario, programmingScenario, travelScenario } from "./_data";
+import {
+  englishScenario,
+  programmingScenario,
+  programmingScenarioJa,
+  travelScenario,
+} from "./_data";
 
 const scenarioKeywords = [
   { scenario: "english", keywords: ["communicating", "another", "language"] },
@@ -68,6 +73,7 @@ const scenarioKeywords = [
 const scenarioTable: Record<string, ChatMessageUserAi[]> = {
   english: englishScenario,
   programming: programmingScenario,
+  programmingJa: programmingScenarioJa,
   travel: travelScenario,
 };
 
@@ -153,12 +159,15 @@ export default function SdkTestPage() {
   // Scenario detection
   const detectScenario = (text: string): string | null => {
     const lower = text.toLowerCase();
+
     for (const entry of scenarioKeywords) {
       if (entry.keywords.some((kw) => lower.includes(kw))) {
         return entry.scenario;
       }
     }
-    return null;
+
+    // Fallback: treat unmatched input as Japanese programming test
+    return "programmingJa";
   };
 
   // Push text message
@@ -332,14 +341,16 @@ export default function SdkTestPage() {
           ) : (
             <div
               key={m.id}
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"
-                }`}
+              className={`flex ${
+                m.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
-                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${m.role === "user"
+                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
+                  m.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-gray-800 text-gray-200"
-                  }`}
+                }`}
               >
                 {m.text}
               </div>

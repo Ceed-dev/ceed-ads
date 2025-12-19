@@ -27,7 +27,7 @@
  *   tracker.ts  → impression/click tracking
  *   renderer.ts → DOM generation
  */
-import type { Ad } from "./core/types";
+import type { ResolvedAd } from "./core/types";
 export declare function initialize(appId: string, apiBaseUrl?: string): void;
 /**
  * Requests an ad from the backend.
@@ -39,14 +39,14 @@ export declare function requestAd(options: {
     contextText: string;
     userId?: string;
 }): Promise<{
-    ad: Ad | null;
+    ad: ResolvedAd | null;
     requestId: string | null;
 }>;
 /**
  * Renders an Action Card using the given Ad and attaches
  * tracking events. Does NOT fetch a new ad.
  */
-export declare function renderAd(ad: Ad, targetElement: HTMLElement, requestId?: string | null): import("./core/types").RenderedAd;
+export declare function renderAd(ad: ResolvedAd, targetElement: HTMLElement, requestId?: string | null): import("./core/types").RenderedAd;
 /**
  * Convenience method:
  *   - fetch an ad

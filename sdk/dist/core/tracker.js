@@ -4,8 +4,8 @@
  * ----------------------------------------------------
  *
  * This module handles impression and click tracking.
- * It does NOT perform any DOM operations or API logic.
- * Instead, it delegates API calls to client.ts.
+ * It does NOT perform any DOM operations.
+ * Network requests are delegated to client.ts.
  *
  * Responsibilities:
  *  - trackImpression(ad, requestId)

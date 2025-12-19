@@ -12,13 +12,13 @@
  *
  * No DOM operations, no event logic. Pure networking only.
  */
-import type { Ad, RequestPayload, EventPayload } from "./types";
+import type { ResolvedAd, RequestPayload, EventPayload } from "./types";
 export declare function initClient(appId: string, apiBaseUrl?: string): void;
 /**
  * Requests an ad from the backend using contextual info.
  */
 export declare function requestAd(payload: Omit<RequestPayload, "sdkVersion" | "appId">): Promise<{
-    ad: Ad | null;
+    ad: ResolvedAd | null;
     requestId: string | null;
 }>;
 /**
