@@ -13,7 +13,12 @@
  * No DOM operations, no event logic. Pure networking only.
  */
 
-import type { Ad, RequestPayload, EventPayload, SDKConfig } from "./types";
+import type {
+  ResolvedAd,
+  RequestPayload,
+  EventPayload,
+  SDKConfig,
+} from "./types";
 
 /* ----------------------------------------------------
  * Internal SDK State (Populated by initialize())
@@ -93,7 +98,7 @@ export function initClient(appId: string, apiBaseUrl?: string) {
  */
 export async function requestAd(
   payload: Omit<RequestPayload, "sdkVersion" | "appId">,
-): Promise<{ ad: Ad | null; requestId: string | null }> {
+): Promise<{ ad: ResolvedAd | null; requestId: string | null }> {
   if (!config.initialized || !config.appId) {
     throw new Error("CeedAds SDK not initialized");
   }
@@ -108,7 +113,7 @@ export async function requestAd(
 
   const response = await postJSON<{
     ok: boolean;
-    ad: Ad | null;
+    ad: ResolvedAd | null;
     requestId: string | null;
   }>(url, mergedPayload);
 

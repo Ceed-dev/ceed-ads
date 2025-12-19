@@ -40,7 +40,7 @@ import { useState, useRef, useEffect } from "react";
 // ⭐ SDK IMPORTS — Core entrypoints for Ceed Ads SDK
 // ============================================================================
 // Local SDK source (used only during development)
-import { initialize, requestAd, renderAd } from "@/../sdk";
+import { initialize, requestAd, renderAd } from "@/../sdk/index";
 
 // Local dist build (used for verifying the build output)
 // import { initialize, requestAd, renderAd } from "@/../sdk/dist";
@@ -48,12 +48,21 @@ import { initialize, requestAd, renderAd } from "@/../sdk";
 // Published SDK (official import for production)
 // import { initialize, requestAd, renderAd } from "@ceedhq/ads-web-sdk";
 
-import type { Ad, ChatMessage, ChatMessageUserAi } from "@/../sdk/core/types";
+import type {
+  ResolvedAd,
+  ChatMessage,
+  ChatMessageUserAi,
+} from "@/../sdk/core/types";
 
 // ============================================================================
 // Scenarios
 // ============================================================================
-import { englishScenario, programmingScenario, travelScenario } from "./_data";
+import {
+  englishScenario,
+  programmingScenario,
+  programmingScenarioJa,
+  travelScenario,
+} from "./_data";
 
 const scenarioKeywords = [
   { scenario: "english", keywords: ["communicating", "another", "language"] },
@@ -64,13 +73,20 @@ const scenarioKeywords = [
 const scenarioTable: Record<string, ChatMessageUserAi[]> = {
   english: englishScenario,
   programming: programmingScenario,
+  programmingJa: programmingScenarioJa,
   travel: travelScenario,
 };
 
 // ============================================================================
 // Inline Ad Card Renderer
 // ============================================================================
-function InlineAdCard({ ad, requestId }: { ad: Ad; requestId: string | null }) {
+function InlineAdCard({
+  ad,
+  requestId,
+}: {
+  ad: ResolvedAd;
+  requestId: string | null;
+}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -143,12 +159,15 @@ export default function SdkTestPage() {
   // Scenario detection
   const detectScenario = (text: string): string | null => {
     const lower = text.toLowerCase();
+
     for (const entry of scenarioKeywords) {
       if (entry.keywords.some((kw) => lower.includes(kw))) {
         return entry.scenario;
       }
     }
-    return null;
+
+    // Fallback: treat unmatched input as Japanese programming test
+    return "programmingJa";
   };
 
   // Push text message
@@ -164,7 +183,7 @@ export default function SdkTestPage() {
   };
 
   // Push ad card
-  const pushAd = (ad: Ad, requestId: string | null) => {
+  const pushAd = (ad: ResolvedAd, requestId: string | null) => {
     setMessages((prev) => [
       ...prev,
       {

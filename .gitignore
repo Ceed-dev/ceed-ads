@@ -40,5 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# firebase admin credentials
+# firebase / gcp service account credentials
 service-account-key.json
+translation-api-service-account.json

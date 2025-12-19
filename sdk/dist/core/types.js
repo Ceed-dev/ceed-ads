@@ -8,7 +8,8 @@
  * logic. Keeping types isolated improves clarity,
  * reusability, and maintainability across modules.
  *
- * The types here align directly with the server-side
- * API schema (ads, requests, events).
+ * The types here align with the client-facing API responses
+ * and request/event payloads. Firestore document schemas
+ * are intentionally not exposed to the SDK.
  */
 export {};

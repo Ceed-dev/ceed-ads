@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { franc } from "franc";
 import { db } from "@/lib/firebase-admin";
 import type { RequestLog } from "@/types";
-import {
-  decideAdByKeyword,
-  type DecidedAd,
-} from "@/lib/ads/deciders/keywordBased";
+import { decideAdByKeyword } from "@/lib/ads/deciders/keywordBased";
+import type { ResolvedAd } from "@/types";
 import type { Timestamp } from "firebase-admin/firestore";
 
 /* --------------------------------------------------------------------------
@@ -32,10 +31,12 @@ export function OPTIONS() {
  *
  * Responsibilities:
  *  - Validate request payload
+ *  - Detect message language on the server
  *  - Apply per-conversation ad frequency control (cooldown)
  *  - Decide an ad using keyword-based logic
+ *    (including translation and localization)
  *  - Store request log in Firestore
- *  - Return decided ad + requestId
+ *  - Return a client-ready ad + requestId
  */
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
       conversationId,
       messageId,
       contextText,
-      language = "en",
       userId,
       sdkVersion = "1.0.0",
     } = body;
@@ -63,6 +63,12 @@ export async function POST(req: NextRequest) {
         { status: 400, headers: CORS_HEADERS },
       );
     }
+
+    // Detect language on the server (source of truth)
+    const detected = franc(contextText);
+
+    // Store detected language (fallback only if undetermined)
+    const language = detected === "und" ? "eng" : detected;
 
     /* ------------------------------------------------------------------
      * 3. Ad Frequency Control (Cooldown)
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .get();
 
-    let decidedAd: DecidedAd | null = null;
+    let decidedAd: ResolvedAd | null = null;
 
     if (!latestSuccessSnap.empty) {
       // There is at least one previous successful ad shown in this conversation.
@@ -97,14 +103,14 @@ export async function POST(req: NextRequest) {
 
       if (!withinCooldown) {
         // Cooldown expired → run normal ad decision
-        decidedAd = await decideAdByKeyword(contextText);
+        decidedAd = await decideAdByKeyword(contextText, language);
       } else {
         // Cooldown active → do NOT show ad
         decidedAd = null;
       }
     } else {
       // No prior successful ads → run normal ad decision
-      decidedAd = await decideAdByKeyword(contextText);
+      decidedAd = await decideAdByKeyword(contextText, language);
     }
 
     /* ------------------------------------------------------------------
@@ -144,7 +150,7 @@ export async function POST(req: NextRequest) {
       { status: 200, headers: CORS_HEADERS },
     );
   } catch (err) {
-    console.error("Error in /api/request:", err);
+    console.error("Error in /api/requests:", err);
 
     return NextResponse.json(
       { ok: false, error: "Internal Server Error" },

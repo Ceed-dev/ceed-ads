@@ -1,31 +1,37 @@
 /**
  * --------------------------------------------------------------------
- * Keyword-Based Ad Decider (MVP)
+ * Keyword-Based Ad Decider
  *
- * Given a user's message (contextText), this function:
- *   1. Fetches all active ads from Firestore
- *   2. Normalizes text (lowercase)
- *   3. Checks exact keyword matches (word-level) between contextText and ad.tags
- *   4. Scores each ad based on number of matched tags
- *   5. Returns the highest-scoring ad
- *      - If multiple ads tie → randomly pick one
- *   6. Returns null if no ad matches at all
+ * Given a user's message and detected language, this function:
+ *   1. Returns null if the language is not supported
+ *   2. Translates the message into English (if needed)
+ *   3. Normalizes the text (lowercase, trimmed)
+ *   4. Fetches all active ads from Firestore
+ *   5. Performs exact word-level keyword matching against ad tags
+ *   6. Scores ads by number of matched tags
+ *   7. Selects the highest-scoring ad
+ *      - If multiple ads tie, one is selected at random
+ *   8. Resolves localized ad fields (title, description, CTA) to a single language
+ *   9. Returns a client-ready ad payload
+ *      - Returns null if no ads match
  *
- * This file intentionally contains no API-specific logic.
- * It is a reusable pure function for selecting ads based on keywords.
+ * This file intentionally contains no API or request-handling logic.
+ * It is a reusable, deterministic function for keyword-based ad selection.
  * --------------------------------------------------------------------
  */
 
 import { db } from "@/lib/firebase-admin";
-import type { Ad } from "@/types";
+import { toEnglish } from "./toEnglish";
+import type { Ad, ResolvedAd } from "@/types";
 
 /**
- * Ad decided by keyword logic (includes Firestore ID + advertiserName).
+ * Languages currently supported by the keyword-based ad decision logic.
+ *
+ * Ads will NOT be served for languages outside this set.
+ * Detection may return other valid language codes, but they are intentionally
+ * excluded here until proper support is added.
  */
-export interface DecidedAd extends Ad {
-  id: string; // Firestore document ID
-  advertiserName: string; // Resolved from advertisers/{advertiserId}
-}
+const SUPPORTED_LANGUAGES = new Set(["eng", "jpn"]);
 
 /**
  * Normalize a string for comparison.
@@ -66,8 +72,15 @@ function tagMatchesContext(context: string, tag: string): boolean {
  */
 export async function decideAdByKeyword(
   contextText: string,
-): Promise<DecidedAd | null> {
-  const normalizedContext = normalize(contextText);
+  language: string,
+): Promise<ResolvedAd | null> {
+  // If language is not supported, do not return any ad
+  if (!SUPPORTED_LANGUAGES.has(language)) {
+    return null;
+  }
+
+  const englishText = await toEnglish(contextText, language);
+  const normalizedContext = normalize(englishText);
 
   // --------------------------------------------------------------
   // 1. Fetch all active ads from Firestore
@@ -125,7 +138,7 @@ export async function decideAdByKeyword(
     topCandidates[Math.floor(Math.random() * topCandidates.length)].ad;
 
   // --------------------------------------------------------------
-  // 5. Fetch advertiserName for the selected ad
+  // 5. Fetch advertiser name and resolve localized ad fields
   // --------------------------------------------------------------
   const advSnap = await db
     .collection("advertisers")
@@ -136,9 +149,21 @@ export async function decideAdByKeyword(
     ? (advSnap.data()?.name as string)
     : "Advertiser";
 
-  // Return final decided ad
+  const title = selected.title[language] ?? selected.title.eng;
+
+  const description =
+    selected.description[language] ?? selected.description.eng;
+
+  const ctaText = selected.ctaText[language] ?? selected.ctaText.eng;
+
   return {
-    ...selected,
+    id: selected.id,
+    advertiserId: selected.advertiserId,
     advertiserName,
-  } as DecidedAd;
+    format: selected.format,
+    title,
+    description,
+    ctaText,
+    ctaUrl: selected.ctaUrl,
+  };
 }

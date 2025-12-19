@@ -31,7 +31,7 @@
 import { initClient, requestAd as clientRequestAd } from "./core/client";
 import { initTracker } from "./core/tracker";
 import { renderActionCard } from "./core/renderer";
-import type { Ad } from "./core/types";
+import type { ResolvedAd } from "./core/types";
 
 /* ----------------------------------------------------
  * 1. Public: initialize(appId, apiBaseUrl?)
@@ -80,7 +80,7 @@ export async function requestAd(options: {
   messageId: string;
   contextText: string;
   userId?: string;
-}): Promise<{ ad: Ad | null; requestId: string | null }> {
+}): Promise<{ ad: ResolvedAd | null; requestId: string | null }> {
   const result = await clientRequestAd(options);
 
   return {
@@ -98,7 +98,7 @@ export async function requestAd(options: {
  * tracking events. Does NOT fetch a new ad.
  */
 export function renderAd(
-  ad: Ad,
+  ad: ResolvedAd,
   targetElement: HTMLElement,
   requestId: string | null = null,
 ) {

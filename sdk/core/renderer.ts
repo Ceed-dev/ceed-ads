@@ -13,7 +13,7 @@
  * in client.ts via tracker.ts.
  */
 
-import type { Ad, RenderedAd } from "./types";
+import type { ResolvedAd, RenderedAd } from "./types";
 import { trackImpression, trackClick } from "./tracker";
 
 /* ----------------------------------------------------
@@ -37,12 +37,15 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
  * Renders an Action Card for the given ad and appends it
  * to the provided container element.
  *
+ * Assumes the ad is already resolved to a single language
+ * by the backend.
+ *
  * Returns:
  *   { rootElement, ad, requestId }
  *   Used later for event tracking.
  */
 export function renderActionCard(
-  ad: Ad,
+  ad: ResolvedAd,
   targetElement: HTMLElement,
   requestId: string | null,
 ): RenderedAd {

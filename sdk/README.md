@@ -1,5 +1,10 @@
 # Ceed Ads Web SDK
 
+> ⚠️ Language Support (Current)
+>
+> The Ceed Ads Web SDK currently supports **English and Japanese** for ad decisioning and creatives.  
+> Additional languages will be added in future releases.
+
 <a href="https://github.com/Ceed-dev/ceed-ads" target="_blank">
   📦 GitHub Repository
 </a>
@@ -110,7 +115,7 @@ Returns:
 
 ```ts
 {
-  ad: Ad | null,
+  ad: ResolvedAd | null,
   requestId: string | null
 }
 ```
@@ -226,7 +231,7 @@ initialize("test-app", "/api");
 ## 📄 TypeScript Support
 
 ```ts
-import type { Ad } from "@ceedhq/ads-web-sdk";
+import type { ResolvedAd } from "@ceedhq/ads-web-sdk";
 ```
 
 ## 🪪 License
