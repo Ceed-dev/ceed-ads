@@ -1,4 +1,4 @@
-**English** | [日本語](./README.ja.md)
+**English** | [日本語](https://github.com/Ceed-dev/ceed-ads/blob/main/sdk/README.ja.md)
 
 # Ceed Ads Web SDK
 
