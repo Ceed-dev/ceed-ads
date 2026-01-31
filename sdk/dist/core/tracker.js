@@ -99,3 +99,28 @@ export async function trackClick(ad, requestId) {
     };
     await sendEvent(payload);
 }
+/* ----------------------------------------------------
+ * Track Submit (for lead_gen format)
+ * ---------------------------------------------------- */
+/**
+ * Sends a submit event when a lead_gen form is submitted.
+ */
+export async function trackSubmit(ad, requestId, email) {
+    if (!appId) {
+        throw new Error("Tracker not initialized");
+    }
+    if (!requestId) {
+        console.warn("trackSubmit: requestId is null (MVP limitation)");
+    }
+    const payload = {
+        type: "submit",
+        adId: ad.id,
+        advertiserId: ad.advertiserId,
+        requestId: requestId !== null && requestId !== void 0 ? requestId : "unknown",
+        appId,
+        conversationId: conversationId !== null && conversationId !== void 0 ? conversationId : undefined,
+        userId: userId !== null && userId !== void 0 ? userId : undefined,
+        submittedEmail: email,
+    };
+    await sendEvent(payload);
+}

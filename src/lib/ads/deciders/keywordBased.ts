@@ -22,7 +22,7 @@
 
 import { db } from "@/lib/firebase-admin";
 import { toEnglish } from "./toEnglish";
-import type { Ad, ResolvedAd } from "@/types";
+import type { Ad, ResolvedAd, LocaleCode } from "@/types";
 
 /**
  * Languages currently supported by the keyword-based ad decision logic.
@@ -78,6 +78,9 @@ export async function decideAdByKeyword(
   if (!SUPPORTED_LANGUAGES.has(language)) {
     return null;
   }
+
+  // At this point, language is guaranteed to be a supported LocaleCode
+  const locale = language as LocaleCode;
 
   const englishText = await toEnglish(contextText, language);
   const normalizedContext = normalize(englishText);
@@ -149,12 +152,12 @@ export async function decideAdByKeyword(
     ? (advSnap.data()?.name as string)
     : "Advertiser";
 
-  const title = selected.title[language] ?? selected.title.eng;
+  const title = selected.title[locale] ?? selected.title.eng ?? "";
 
   const description =
-    selected.description[language] ?? selected.description.eng;
+    selected.description[locale] ?? selected.description.eng ?? "";
 
-  const ctaText = selected.ctaText[language] ?? selected.ctaText.eng;
+  const ctaText = selected.ctaText[locale] ?? selected.ctaText.eng ?? "";
 
   return {
     id: selected.id,

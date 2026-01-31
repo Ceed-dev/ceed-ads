@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
       userId,
       conversationId,
       appId,
+      submittedEmail,
     } = body;
 
     // Basic validation (MVP minimum)
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate event type
-    const validTypes: EventType[] = ["impression", "click"];
+    const validTypes: EventType[] = ["impression", "click", "submit"];
     if (!validTypes.includes(type)) {
       return NextResponse.json(
         { error: "Invalid event type" },
@@ -96,6 +97,7 @@ export async function POST(req: NextRequest) {
       userId,
       conversationId,
       appId,
+      submittedEmail,
       meta: {
         createdAt: now,
         updatedAt: now,

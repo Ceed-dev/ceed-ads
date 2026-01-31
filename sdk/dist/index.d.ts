@@ -27,33 +27,55 @@
  *   tracker.ts  → impression/click tracking
  *   renderer.ts → DOM generation
  */
-import type { ResolvedAd } from "./core/types";
+import { renderActionCard, renderLeadGenCard, renderStaticCard, renderFollowupCard } from "./core/renderer";
+import type { ResolvedAd, AdFormat } from "./core/types";
+export type { ResolvedAd, AdFormat } from "./core/types";
+export type { ResolvedLeadGenConfig, ResolvedFollowupConfig, StaticConfig, } from "./core/types";
 export declare function initialize(appId: string, apiBaseUrl?: string): void;
 /**
  * Requests an ad from the backend.
  * Does NOT render anything — purely retrieves the ad data.
+ *
+ * @param options - Request options
+ * @param options.formats - Accepted ad formats (optional, defaults to all)
  */
 export declare function requestAd(options: {
     conversationId: string;
     messageId: string;
     contextText: string;
     userId?: string;
+    formats?: AdFormat[];
 }): Promise<{
     ad: ResolvedAd | null;
     requestId: string | null;
 }>;
 /**
- * Renders an Action Card using the given Ad and attaches
- * tracking events. Does NOT fetch a new ad.
+ * Renders an ad based on its format and attaches tracking events.
+ * Supports: action_card, lead_gen, static, followup.
  */
 export declare function renderAd(ad: ResolvedAd, targetElement: HTMLElement, requestId?: string | null): import("./core/types").RenderedAd;
+export { renderActionCard, renderLeadGenCard, renderStaticCard, renderFollowupCard };
 /**
  * Convenience method:
  *   - fetch an ad
- *   - render it into the target element
- *   - automatically track impression + click
+ *   - render it into the target element (format-aware)
+ *   - automatically track impression + click/submit
  *
  * This is the simplest and most common usage pattern.
+ *
+ * @param options - Show ad options
+ * @param options.formats - Accepted ad formats (optional, defaults to all)
+ *
+ * @example
+ * ```typescript
+ * await showAd({
+ *   conversationId: "chat-123",
+ *   messageId: crypto.randomUUID(),
+ *   contextText: userMessage,
+ *   targetElement: document.getElementById("ad-slot"),
+ *   formats: ["action_card", "lead_gen"]  // Only accept these formats
+ * });
+ * ```
  */
 export declare function showAd(options: {
     conversationId: string;
@@ -61,4 +83,5 @@ export declare function showAd(options: {
     contextText: string;
     targetElement: HTMLElement;
     userId?: string;
+    formats?: AdFormat[];
 }): Promise<void>;

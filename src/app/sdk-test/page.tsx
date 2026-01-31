@@ -55,13 +55,15 @@ import type {
 } from "@/../sdk/core/types";
 
 // ============================================================================
-// Scenarios
+// Scenarios & Format Demos
 // ============================================================================
 import {
   englishScenario,
   programmingScenario,
   programmingScenarioJa,
   travelScenario,
+  demoAds,
+  type DemoFormat,
 } from "./_data";
 
 const scenarioKeywords = [
@@ -76,6 +78,11 @@ const scenarioTable: Record<string, ChatMessageUserAi[]> = {
   programmingJa: programmingScenarioJa,
   travel: travelScenario,
 };
+
+// ============================================================================
+// View Mode Type
+// ============================================================================
+type ViewMode = "chat" | "formats";
 
 // ============================================================================
 // Inline Ad Card Renderer
@@ -113,9 +120,127 @@ function InlineAdCard({
 }
 
 // ============================================================================
+// Format Demo Component
+// ============================================================================
+function FormatDemo({
+  format,
+  isSelected,
+  onSelect,
+}: {
+  format: DemoFormat;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const ad = demoAds[format];
+
+  useEffect(() => {
+    if (!containerRef.current || !isSelected) return;
+
+    // Clear previous card
+    containerRef.current.innerHTML = "";
+
+    // Render the demo ad
+    renderAd(ad, containerRef.current, `demo-${format}`);
+  }, [ad, format, isSelected]);
+
+  const formatLabels: Record<DemoFormat, string> = {
+    action_card: "Action Card",
+    lead_gen: "Lead Gen",
+    static: "Static",
+    followup: "Followup",
+  };
+
+  const formatDescriptions: Record<DemoFormat, string> = {
+    action_card: "Traditional ad with CTA button",
+    lead_gen: "Email collection form",
+    static: "Page load display ad",
+    followup: "Sponsored question card",
+  };
+
+  return (
+    <div className="mb-6">
+      <button
+        onClick={onSelect}
+        className={`w-full text-left p-4 rounded-lg border transition-colors ${
+          isSelected
+            ? "border-blue-500 bg-blue-500/10"
+            : "border-gray-700 hover:border-gray-600 bg-gray-800/50"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-white">{formatLabels[format]}</h3>
+            <p className="text-sm text-gray-400">{formatDescriptions[format]}</p>
+          </div>
+          <div
+            className={`w-3 h-3 rounded-full ${
+              isSelected ? "bg-blue-500" : "bg-gray-600"
+            }`}
+          />
+        </div>
+      </button>
+
+      {isSelected && (
+        <div className="mt-4 p-4 bg-gray-900/50 rounded-lg">
+          <div className="text-xs text-gray-500 mb-3 font-mono">
+            format: "{format}" | requestId: "demo-{format}"
+          </div>
+          <div ref={containerRef} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Format Demo Page View
+// ============================================================================
+function FormatDemoView() {
+  const [selectedFormat, setSelectedFormat] = useState<DemoFormat>("action_card");
+  const formats: DemoFormat[] = ["action_card", "lead_gen", "static", "followup"];
+
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-white mb-2">Ad Format Demos</h1>
+        <p className="text-gray-400 mb-6">
+          Click on each format to see how it renders. Events (impression, click, submit)
+          are logged to the console.
+        </p>
+
+        <div className="space-y-4">
+          {formats.map((format) => (
+            <FormatDemo
+              key={format}
+              format={format}
+              isSelected={selectedFormat === format}
+              onSelect={() => setSelectedFormat(format)}
+            />
+          ))}
+        </div>
+
+        <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+          <h2 className="text-lg font-semibold text-white mb-3">Event Tracking</h2>
+          <p className="text-sm text-gray-400 mb-3">
+            Open the browser console to see tracked events:
+          </p>
+          <ul className="text-sm text-gray-400 list-disc list-inside space-y-1">
+            <li><code className="text-blue-400">impression</code> — Triggered when ad is rendered</li>
+            <li><code className="text-blue-400">click</code> — Triggered when CTA button is clicked</li>
+            <li><code className="text-blue-400">submit</code> — Triggered when lead_gen form is submitted</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Page Component
 // ============================================================================
 export default function SdkTestPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>("formats");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
 
@@ -329,66 +454,98 @@ export default function SdkTestPage() {
   // ============================================================================
   return (
     <div className="flex flex-col h-screen bg-[#0d0d0d] text-gray-200">
-      {/* Chat area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 && (
-          <p className="text-center text-gray-500">Chat will appear here...</p>
-        )}
-
-        {messages.map((m) =>
-          m.role === "ad" ? (
-            <InlineAdCard key={m.id} ad={m.ad} requestId={m.requestId} />
-          ) : (
-            <div
-              key={m.id}
-              className={`flex ${
-                m.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
-                  m.role === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-200"
-                }`}
-              >
-                {m.text}
-              </div>
-            </div>
-          ),
-        )}
-
-        {/* Thinking */}
-        {isThinking && (
-          <div className="flex justify-start">
-            <div className="px-4 py-2 max-w-[70%] text-sm text-gray-400 italic animate-pulse">
-              Thinking...
-            </div>
-          </div>
-        )}
-
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Bottom input */}
-      <div className="border-t border-gray-700 p-4 bg-[#0d0d0d]">
-        <div className="flex items-center gap-3 max-w-3xl mx-auto">
-          <input
-            className="flex-1 bg-gray-900 text-gray-100 px-4 py-3 rounded-lg outline-none border border-gray-700 focus:border-blue-500"
-            placeholder="Type your message..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-700 bg-[#0d0d0d]">
+        <div className="flex gap-1 p-2 max-w-3xl mx-auto">
           <button
-            onClick={handleSend}
-            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            onClick={() => setViewMode("formats")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "formats"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
           >
-            Send
+            Format Demos
+          </button>
+          <button
+            onClick={() => setViewMode("chat")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === "chat"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:text-white hover:bg-gray-800"
+            }`}
+          >
+            Chat Simulator
           </button>
         </div>
       </div>
+
+      {viewMode === "formats" ? (
+        <FormatDemoView />
+      ) : (
+        <>
+          {/* Chat area */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {messages.length === 0 && (
+              <p className="text-center text-gray-500">Chat will appear here...</p>
+            )}
+
+            {messages.map((m) =>
+              m.role === "ad" ? (
+                <InlineAdCard key={m.id} ad={m.ad} requestId={m.requestId} />
+              ) : (
+                <div
+                  key={m.id}
+                  className={`flex ${
+                    m.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`px-4 py-2 rounded-lg max-w-[70%] text-sm ${
+                      m.role === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-200"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              ),
+            )}
+
+            {/* Thinking */}
+            {isThinking && (
+              <div className="flex justify-start">
+                <div className="px-4 py-2 max-w-[70%] text-sm text-gray-400 italic animate-pulse">
+                  Thinking...
+                </div>
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Bottom input */}
+          <div className="border-t border-gray-700 p-4 bg-[#0d0d0d]">
+            <div className="flex items-center gap-3 max-w-3xl mx-auto">
+              <input
+                className="flex-1 bg-gray-900 text-gray-100 px-4 py-3 rounded-lg outline-none border border-gray-700 focus:border-blue-500"
+                placeholder="Type your message..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              />
+
+              <button
+                onClick={handleSend}
+                className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

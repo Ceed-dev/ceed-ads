@@ -33,3 +33,7 @@ export declare function trackImpression(ad: ResolvedAd, requestId: string | null
  * Sends a click event when the CTA button is clicked.
  */
 export declare function trackClick(ad: ResolvedAd, requestId: string | null): Promise<void>;
+/**
+ * Sends a submit event when a lead_gen form is submitted.
+ */
+export declare function trackSubmit(ad: ResolvedAd, requestId: string | null, email: string): Promise<void>;

@@ -18,6 +18,7 @@ import type {
   RequestPayload,
   EventPayload,
   SDKConfig,
+  AdFormat,
 } from "./types";
 
 /* ----------------------------------------------------

@@ -29,7 +29,7 @@
  */
 import { initClient, requestAd as clientRequestAd } from "./core/client";
 import { initTracker } from "./core/tracker";
-import { renderActionCard } from "./core/renderer";
+import { renderAd as coreRenderAd, renderActionCard, renderLeadGenCard, renderStaticCard, renderFollowupCard, } from "./core/renderer";
 /* ----------------------------------------------------
  * 1. Public: initialize(appId, apiBaseUrl?)
  * ----------------------------------------------------
@@ -65,6 +65,9 @@ export function initialize(appId, apiBaseUrl) {
 /**
  * Requests an ad from the backend.
  * Does NOT render anything — purely retrieves the ad data.
+ *
+ * @param options - Request options
+ * @param options.formats - Accepted ad formats (optional, defaults to all)
  */
 export async function requestAd(options) {
     var _a, _b;
@@ -78,22 +81,38 @@ export async function requestAd(options) {
  * 3. Public: renderAd(ad, targetElement)
  * ---------------------------------------------------- */
 /**
- * Renders an Action Card using the given Ad and attaches
- * tracking events. Does NOT fetch a new ad.
+ * Renders an ad based on its format and attaches tracking events.
+ * Supports: action_card, lead_gen, static, followup.
  */
 export function renderAd(ad, targetElement, requestId = null) {
-    return renderActionCard(ad, targetElement, requestId);
+    return coreRenderAd(ad, targetElement, requestId);
 }
+// Export individual renderers for advanced use cases
+export { renderActionCard, renderLeadGenCard, renderStaticCard, renderFollowupCard };
 /* ----------------------------------------------------
  * 4. Public: showAd(options)
  * ---------------------------------------------------- */
 /**
  * Convenience method:
  *   - fetch an ad
- *   - render it into the target element
- *   - automatically track impression + click
+ *   - render it into the target element (format-aware)
+ *   - automatically track impression + click/submit
  *
  * This is the simplest and most common usage pattern.
+ *
+ * @param options - Show ad options
+ * @param options.formats - Accepted ad formats (optional, defaults to all)
+ *
+ * @example
+ * ```typescript
+ * await showAd({
+ *   conversationId: "chat-123",
+ *   messageId: crypto.randomUUID(),
+ *   contextText: userMessage,
+ *   targetElement: document.getElementById("ad-slot"),
+ *   formats: ["action_card", "lead_gen"]  // Only accept these formats
+ * });
+ * ```
  */
 export async function showAd(options) {
     // 1. Fetch ad
@@ -102,12 +121,13 @@ export async function showAd(options) {
         messageId: options.messageId,
         contextText: options.contextText,
         userId: options.userId,
+        formats: options.formats,
     });
     if (!ad) {
         console.log("[CeedAds] No ad available");
         return;
     }
-    // 2. Render it
-    renderActionCard(ad, options.targetElement, requestId);
-    console.log("[CeedAds] Ad rendered successfully");
+    // 2. Render based on format
+    coreRenderAd(ad, options.targetElement, requestId);
+    console.log(`[CeedAds] Ad (${ad.format}) rendered successfully`);
 }

@@ -16,7 +16,7 @@
 export type EventId = string;
 
 /** Types of ad events tracked in the MVP. */
-export type EventType = "impression" | "click";
+export type EventType = "impression" | "click" | "submit";
 
 /** Timestamps for auditability. */
 export interface EventMeta {
@@ -54,6 +54,9 @@ export interface EventLog {
 
   /** Optional application identifier from the SDK client. */
   appId?: string;
+
+  /** Email submitted for lead_gen format (only for submit events). */
+  submittedEmail?: string;
 
   /** Metadata timestamps. */
   meta: EventMeta;

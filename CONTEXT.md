@@ -1,0 +1,153 @@
+# Ceed Ads - Project Context
+
+> This document provides background context for AI assistants and developers working on this project.
+
+## Purpose
+
+Ceed Ads is a **contextual advertising platform** designed specifically for AI chat applications. Unlike traditional display advertising, it analyzes conversation context to serve relevant, non-intrusive ads that enhance rather than disrupt the user experience.
+
+### Business Goals
+
+1. Provide monetization for AI chatbot developers
+2. Deliver value to users through relevant, contextual ads
+3. Enable advertisers to reach users at moments of high intent
+
+## Architecture Overview
+
+```
+┌─────────────────┐     ┌─────────────────────────────────┐
+│  Chat App       │     │  Ceed Ads Backend (Next.js)     │
+│  (SDK Client)   │────▶│                                 │
+│                 │     │  ┌────────────────────────────┐ │
+│  @ceedhq/       │     │  │ /api/requests              │ │
+│  ads-web-sdk    │     │  │ - Language detection       │ │
+│                 │     │  │ - Keyword matching         │ │
+└─────────────────┘     │  │ - Cooldown control         │ │
+                        │  └────────────────────────────┘ │
+                        │                                 │
+                        │  ┌────────────────────────────┐ │
+                        │  │ /api/events                │ │
+                        │  │ - Impression tracking      │ │
+                        │  │ - Click tracking           │ │
+                        │  └────────────────────────────┘ │
+                        │                                 │
+                        │  ┌────────────────────────────┐ │
+                        │  │ Firebase Firestore         │ │
+                        │  │ - ads, advertisers         │ │
+                        │  │ - requests, events         │ │
+                        │  └────────────────────────────┘ │
+                        └─────────────────────────────────┘
+```
+
+## Current Status (MVP)
+
+### Supported Features
+
+- **Ad Format**: `action_card` - A text-based promotional card with CTA button
+- **Languages**: English (`eng`) and Japanese (`jpn`)
+- **Targeting**: Keyword-based matching using ad tags
+- **Tracking**: Impression and click events
+- **Frequency Control**: 60-second cooldown per conversation
+
+### Ad Formats Roadmap
+
+| Format | Status | Description |
+|--------|--------|-------------|
+| `action_card` | Live | Text card with title, description, CTA |
+| `lead_gen` | Planned | Form-based lead capture |
+| `static` | Planned | Image/banner ads |
+| `followup` | Planned | Conversation-triggered follow-up |
+
+## Key Decisions and Rationale
+
+### 1. Server-Side Language Detection
+
+**Decision**: Use `franc` for language detection on the server, not the client.
+
+**Why**:
+- Single source of truth for language
+- Clients can't manipulate detection
+- Consistent behavior across SDK versions
+
+### 2. Exact Word Matching for Keywords
+
+**Decision**: Match keywords as whole words only, not substrings.
+
+**Why**:
+- Avoids false positives (e.g., "daily" containing "ai")
+- More predictable ad targeting
+- Reduces advertiser confusion
+
+### 3. Translation to English for Matching
+
+**Decision**: Translate non-English text to English before keyword matching.
+
+**Why**:
+- Advertisers only need to define English keywords
+- Consistent matching logic regardless of input language
+- Easier to scale to new languages
+
+### 4. Conversation-Level Cooldown
+
+**Decision**: 60-second cooldown per conversation after showing an ad.
+
+**Why**:
+- Prevents ad spam in active conversations
+- Better user experience
+- Matches natural conversation pacing
+
+## Known Constraints
+
+1. **Language Support**: Only English and Japanese currently supported. Other languages return no ads.
+
+2. **No User Authentication**: The SDK accepts `userId` optionally but does not validate it.
+
+3. **No Advertiser Dashboard**: Advertisers currently rely on direct Firestore access or API calls.
+
+4. **No Real-time Analytics**: Event data is stored but not aggregated in real-time.
+
+5. **Single Ad Format**: Only `action_card` is implemented. Multi-format support requires schema changes.
+
+## Related Repositories
+
+This repository contains both the backend API and the Web SDK. The SDK is published separately to npm as `@ceedhq/ads-web-sdk`.
+
+## Development Notes
+
+### Testing the SDK Locally
+
+1. Start the dev server: `npm run dev`
+2. Visit `/sdk-test` for the demo chat page
+3. Use `initialize("demo-app", "/api")` to point SDK to local API
+
+### Firestore Schema
+
+```typescript
+// ads/{adId}
+{
+  advertiserId: string,
+  format: "action_card",
+  title: { eng: string, jpn?: string },
+  description: { eng: string, jpn?: string },
+  ctaText: { eng: string, jpn?: string },
+  ctaUrl: string,
+  tags: string[],
+  status: "active" | "paused" | "archived",
+  meta: { createdAt: Date, updatedAt: Date }
+}
+
+// advertisers/{advertiserId}
+{
+  name: string,
+  status: "active" | "suspended",
+  websiteUrl?: string,
+  meta: { createdAt: Date, updatedAt: Date }
+}
+```
+
+## Session History
+
+### 2026-01-31
+
+- Created comprehensive README.md with setup instructions and API reference
+- Created CONTEXT.md with project background and architectural decisions
