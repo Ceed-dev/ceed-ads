@@ -2,151 +2,179 @@
 
 # Ceed Ads Web SDK
 
-> ⚠️ 対応言語（現在）
->
-> Ceed Ads Web SDK は現在、広告配信およびクリエイティブにおいて**英語と日本語**に対応しています。
-> 今後のリリースで対応言語を追加予定です。
+チャット形式のWebアプリケーションにコンテキスト連動型広告を組み込むためのTypeScript SDKです。
 
-<a href="https://github.com/Ceed-dev/ceed-ads" target="_blank">
-  📦 GitHub リポジトリ
-</a>
+> ⚠️ **対応言語**: 現在、広告配信およびクリエイティブにおいて**英語と日本語**に対応しています。今後のリリースで対応言語を追加予定です。
 
-チャット形式のアプリケーションに**コンテキスト連動型のチャット内アクションカード広告**を簡単に組み込める、軽量な JavaScript/TypeScript SDK です。
+## 目次
 
-この SDK は以下の機能を提供します：
+- [インストール](#インストール)
+- [クイックスタート](#クイックスタート)
+- [APIリファレンス](#apiリファレンス)
+  - [initialize()](#1-initializeappid-apibaseurl)
+  - [requestAd()](#2-requestadoptions)
+  - [renderAd()](#3-renderadad-targetelement-requestid)
+  - [showAd()](#4-showadoptions)
+- [広告フォーマット](#広告フォーマット)
+  - [Action Card](#action_card)
+  - [Lead Gen](#lead_gen)
+  - [Static](#static)
+  - [Followup](#followup)
+- [フォーマット指定方法](#フォーマット指定方法)
+- [イベントトラッキング](#イベントトラッキング)
+- [TypeScript型定義](#typescript型定義)
+- [エラーハンドリング](#エラーハンドリング)
+- [実装例](#実装例)
+- [ローカル開発](#ローカル開発)
 
-- アプリの初期化（`initialize`）
-- ユーザーメッセージのコンテキストに基づく広告リクエスト（`requestAd`）
-- 広告の DOM へのレンダリング（`renderAd`）
-- 広告の取得・レンダリング・トラッキングを自動で行う便利メソッド（`showAd`）
+---
 
-## 🎥 デモ動画 — アクションカードの動作例
-
-チャット UI 内でアクションカードがどのように表示されるかをご覧ください：
-
-<a href="https://drive.google.com/file/d/1EBDielkMjenRoehv24jBn9sRLou0MCs-/view?usp=sharing" target="_blank">
-  👉 デモ動画を見る
-</a>
-
-### 🧩 デモのソースコード
-
-<a href="https://github.com/Ceed-dev/ceed-ads/blob/main/src/app/sdk-test/page.tsx" target="_blank">
-  👉 デモ用チャットページのソースコードを見る
-</a>
-
-## 📦 インストール
+## インストール
 
 ```bash
 npm install @ceedhq/ads-web-sdk
 ```
 
-## 🚀 クイックスタート
+---
 
-以下は、Ceed Ads をアプリケーションに組み込むための**最小限のセットアップ**です。
+## クイックスタート
 
-### **1. SDK をインポート**
+```typescript
+import { initialize, showAd } from "@ceedhq/ads-web-sdk";
 
-```ts
-import { initialize, requestAd, renderAd, showAd } from "@ceedhq/ads-web-sdk";
-```
-
-### **2. SDK を初期化（ページ読み込み時に一度だけ呼び出し）**
-
-```ts
+// 1. アプリ起動時に一度だけ初期化
 initialize("your-app-id");
-```
 
-オプション：
-
-- `appId`（**必須**）– アプリケーションを一意に識別する ID。
-- `apiBaseUrl`（任意）– ローカルテスト用にバックエンド URL を上書き。
-
-例：
-
-```ts
-initialize("demo-app"); // デフォルトの本番 API を使用
-initialize("demo-app", "/api"); // ローカル API を使用（開発時のみ）
-```
-
-## 📘 パブリック API
-
-SDK は**4つのコア関数**を提供します。
-
-### 1. `initialize(appId, apiBaseUrl?)`
-
-以降の SDK 呼び出しで使用されるグローバル設定をセットアップします。
-
-#### 例：
-
-```ts
-initialize("my-app-id");
-```
-
-この呼び出し後：
-
-- すべての広告リクエストに自動的に appId が含まれます。
-- インプレッション・クリックイベント用のトラッカーが初期化されます。
-
-### 2. `requestAd(options)`
-
-ユーザーメッセージのコンテキストに基づいて広告を取得します。
-**レンダリングは行いません。**
-
-#### パラメータ：
-
-```ts
-{
-  conversationId: string;   // チャットルーム/スレッドごとの一意な ID
-  messageId: string;        // メッセージごとの一意な ID
-  contextText: string;      // キーワードマッチングに使用するユーザーメッセージテキスト
-  userId?: string;          // 任意のユーザー識別子
-}
-```
-
-#### 例：
-
-```ts
-const { ad, requestId } = await requestAd({
+// 2. ユーザーメッセージ後に広告を表示
+await showAd({
   conversationId: "chat-123",
   messageId: crypto.randomUUID(),
-  contextText: "I want to learn English",
+  contextText: "プログラミングを学びたい",
+  targetElement: document.getElementById("ad-slot"),
 });
 ```
 
-戻り値：
+---
 
-```ts
-{
-  ad: ResolvedAd | null,
-  requestId: string | null
+## APIリファレンス
+
+### 1. `initialize(appId, apiBaseUrl?)`
+
+**他のSDK呼び出しの前に必須です。**
+
+以降のAPIリクエストで使用されるグローバル設定をセットアップします。
+
+```typescript
+initialize(appId: string, apiBaseUrl?: string): void
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| `appId` | `string` | はい | アプリケーション識別子 |
+| `apiBaseUrl` | `string` | いいえ | API URLの上書き（開発用） |
+
+**例：**
+
+```typescript
+// 本番環境（デフォルトAPI使用）
+initialize("my-app");
+
+// 開発環境（ローカルAPI）
+initialize("my-app", "/api");
+```
+
+---
+
+### 2. `requestAd(options)`
+
+会話のコンテキストに基づいて広告を取得します。**レンダリングは行いません。**
+
+レンダリングを完全に制御したい場合に使用します。
+
+```typescript
+async requestAd(options: {
+  conversationId: string;
+  messageId: string;
+  contextText: string;
+  userId?: string;
+  formats?: AdFormat[];
+}): Promise<{ ad: ResolvedAd | null; requestId: string | null }>
+```
+
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| `conversationId` | `string` | はい | チャットセッションの一意ID |
+| `messageId` | `string` | はい | メッセージの一意ID |
+| `contextText` | `string` | はい | キーワードマッチングに使用するユーザーメッセージ |
+| `userId` | `string` | いいえ | オプションのユーザー識別子 |
+| `formats` | `AdFormat[]` | いいえ | 取得したい広告フォーマットの配列 |
+
+**例：**
+
+```typescript
+const { ad, requestId } = await requestAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "フライトを予約するにはどうすればいいですか？",
+});
+
+if (ad) {
+  console.log(`広告フォーマット: ${ad.format}`);
+  console.log(`広告主: ${ad.advertiserName}`);
 }
 ```
 
+---
+
 ### 3. `renderAd(ad, targetElement, requestId?)`
 
-広告を DOM 要素にレンダリングし、インプレッション/クリックのトラッキングを設定します。
+広告をDOMにレンダリングし、インプレッションとクリックを自動的にトラッキングします。
 
-#### 例：
+```typescript
+renderAd(
+  ad: ResolvedAd,
+  targetElement: HTMLElement,
+  requestId?: string | null
+): RenderedAd
+```
 
-```ts
+| パラメータ | 型 | 必須 | 説明 |
+|-----------|------|------|------|
+| `ad` | `ResolvedAd` | はい | `requestAd()`から取得した広告オブジェクト |
+| `targetElement` | `HTMLElement` | はい | レンダリング先のDOM要素 |
+| `requestId` | `string \| null` | いいえ | イベントトラッキング用のリクエストID |
+
+**例：**
+
+```typescript
 const container = document.getElementById("ad-slot");
+container.innerHTML = ""; // 前の広告をクリア
 
 renderAd(ad, container, requestId);
 ```
 
-### 4. `showAd(options)` — 便利メソッド
+---
 
-**SDK を使う最もシンプルな方法です。**
+### 4. `showAd(options)`
 
-この関数は以下を行います：
+取得 + レンダリング + トラッキングを1回の呼び出しで行う**便利メソッド**です。
 
-1. 広告を取得
-2. ターゲット要素にレンダリング
-3. インプレッション・クリックイベントをトラッキング
+広告を統合する最もシンプルな方法です。
 
-#### 例：
+```typescript
+async showAd(options: {
+  conversationId: string;
+  messageId: string;
+  contextText: string;
+  targetElement: HTMLElement;
+  userId?: string;
+  formats?: AdFormat[];
+}): Promise<void>
+```
 
-```ts
+**例：**
+
+```typescript
 await showAd({
   conversationId: "chat-123",
   messageId: crypto.randomUUID(),
@@ -155,87 +183,446 @@ await showAd({
 });
 ```
 
-## 🧠 広告コンテキストの仕組み
+---
 
-バックエンドは以下に基づいて広告の適切性を判断します：
+## 広告フォーマット
 
-- **キーワードマッチング**（`contextText`）
-- **会話レベルのクールダウン**（広告の連続表示を防止）
-- **シナリオ固有のターゲティングロジック**
+SDKは4つの広告フォーマットをサポートしており、それぞれ異なるユースケース向けに設計されています。
 
-アプリケーション側でこれらのルールを管理する必要はありません —
-ユーザーメッセージごとに `requestAd(...)` を呼び出すだけです。
+### `action_card`
 
-## 💬 完全な統合例（チャットアプリ）
+**デフォルトフォーマット** — タイトル、説明、CTAボタンを持つカードです。
 
-```ts
-import { initialize, requestAd, renderAd } from "@ceedhq/ads-web-sdk";
+```
+┌─────────────────────────────────┐
+│ ● 広告主名                   Ad  │
+├─────────────────────────────────┤
+│ 広告タイトル                     │
+│ 広告の説明文がここに             │
+│ 入ります。                       │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │     コールトゥアクション      │ │
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+```
 
-initialize("test-app"); // 一度だけ実行
+**ユースケース:** 明確なCTAを持つ標準的なプロモーション広告。
 
-async function handleUserMessage(text: string) {
-  const { ad, requestId } = await requestAd({
-    conversationId: "demo-conv",
-    messageId: crypto.randomUUID(),
-    contextText: text,
-  });
+**動作:**
+- レンダリング時にインプレッションをトラッキング
+- CTAボタンクリック時にクリックをトラッキング
+- `ctaUrl`を新しいタブで開く
 
-  if (!ad) return;
+---
 
-  const slot = document.getElementById("ad-container");
-  slot.innerHTML = "";
+### `lead_gen`
 
-  renderAd(ad, slot, requestId);
+**リードジェネレーションフォーマット** — 成功メッセージ付きのメール収集フォームです。
+
+```
+┌─────────────────────────────────┐
+│ ● 広告主名                   Ad  │
+├─────────────────────────────────┤
+│ 無料ガイドをダウンロード         │
+│ メールアドレスを入力して         │
+│ チュートリアルを受け取る。       │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │ メールアドレスを入力...      │ │
+│ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │         登録する             │ │
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+
+送信後:
+┌─────────────────────────────────┐
+│ ✓ ありがとうございます！        │
+└─────────────────────────────────┘
+```
+
+**ユースケース:** ニュースレター登録、リード獲得、コンテンツダウンロード。
+
+**動作:**
+- レンダリング時にインプレッションをトラッキング
+- フォーム送信時にメールアドレスとともにsubmitイベントをトラッキング
+- 送信後に成功メッセージを表示
+- `autocomplete`属性をサポート
+
+**必須設定:**
+
+```typescript
+leadGenConfig: {
+  placeholder: string;       // 入力フィールドのプレースホルダー
+  submitButtonText: string;  // ボタンラベル
+  autocompleteType: "email" | "name" | "tel" | "off";
+  successMessage: string;    // 送信後に表示
 }
 ```
 
-## 🧩 例：React でインライン広告をレンダリング
+---
+
+### `static`
+
+**ディスプレイフォーマット** — ページロードターゲティング用のaction_card風フォーマット。
+
+```
+┌─────────────────────────────────┐
+│ ● 広告主名                   Ad  │
+├─────────────────────────────────┤
+│ スペシャルオファー               │
+│ 期間限定で選りすぐりの           │
+│ 商品を割引中。                   │
+│                                 │
+│ ┌─────────────────────────────┐ │
+│ │        今すぐ購入            │ │
+│ └─────────────────────────────┘ │
+└─────────────────────────────────┘
+```
+
+**ユースケース:** サイドバー、ページヘッダー、フッター用のバナースタイル広告。
+
+**動作:**
+- `action_card`と同じレンダリング
+- バックエンドで異なるターゲティングロジック（キーワード、地域、デバイスタイプ）
+- レンダリング時にインプレッションをトラッキング
+- CTAクリック時にクリックをトラッキング
+
+**オプション設定:**
+
+```typescript
+staticConfig: {
+  displayPosition: "top" | "bottom" | "inline" | "sidebar";
+  targetingParams?: {
+    keywords?: string[];
+    geo?: string[];
+    deviceTypes?: ("desktop" | "mobile" | "tablet")[];
+  }
+}
+```
+
+---
+
+### `followup`
+
+**スポンサード質問フォーマット** — 会話フローのためのタップ可能な質問カード。
+
+```
+┌─────────────────────────────────┐
+│ ● 広告主名                   Ad  │
+├─────────────────────────────────┤
+│ 私たちの語学コースについて       │
+│ もっと知りたいですか？           │
+│                                 │
+│ → タップして詳しく見る           │
+└─────────────────────────────────┘
+```
+
+**ユースケース:** 広告主がスポンサーする提案型フォローアップ質問。
+
+**動作:**
+- カード全体がタップ可能（ボタンだけではない）
+- カード枠にホバーエフェクト
+- タップ時にクリックイベントをトラッキング
+- タップアクションは設定可能:
+  - `redirect`: URLを新しいタブで開く
+  - `expand`: ホストアプリが展開を処理
+  - `submit`: ホストアプリが送信を処理
+
+**必須設定:**
+
+```typescript
+followupConfig: {
+  questionText: string;      // スポンサード質問
+  tapAction: "expand" | "redirect" | "submit";
+  tapActionUrl?: string;     // tapActionが"redirect"の場合は必須
+}
+```
+
+---
+
+## フォーマット指定方法
+
+開発者は `formats` パラメータを使用して、取得したい広告フォーマットを指定できます。
+
+### 特定のフォーマットのみをリクエスト
+
+```typescript
+// action_card と lead_gen のみをリクエスト
+const { ad, requestId } = await requestAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "英語を学びたい",
+  formats: ["action_card", "lead_gen"],
+});
+
+// showAd でも同様に指定可能
+await showAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "英語を学びたい",
+  targetElement: document.getElementById("ad-slot"),
+  formats: ["action_card", "lead_gen"],
+});
+```
+
+### 全フォーマットをリクエスト（デフォルト）
+
+```typescript
+// formats を指定しない場合、全フォーマットが対象
+const { ad, requestId } = await requestAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "英語を学びたい",
+});
+```
+
+### 利用可能なフォーマット値
+
+| 値 | 説明 |
+|---|------|
+| `"action_card"` | 標準CTAカード |
+| `"lead_gen"` | メール収集フォーム |
+| `"static"` | バナースタイル広告 |
+| `"followup"` | スポンサード質問 |
+
+---
+
+## イベントトラッキング
+
+SDKは以下のイベントを自動的にトラッキングします：
+
+| イベント | トリガー | 説明 |
+|---------|---------|------|
+| `impression` | レンダリング時 | 広告がユーザーに表示された |
+| `click` | CTAクリック時 | ユーザーがCTAボタンをクリックした |
+| `submit` | フォーム送信時 | ユーザーがlead_genフォームを送信した |
+
+**自動重複排除:** インプレッションは広告+requestIdのペアごとに重複排除され、重複トラッキングを防ぎます（例：React StrictModeの二重レンダリング）。
+
+### 手動トラッキング（上級者向け）
+
+手動で制御が必要な場合、個別のレンダラーをインポートできます：
+
+```typescript
+import {
+  renderActionCard,
+  renderLeadGenCard,
+  renderStaticCard,
+  renderFollowupCard,
+} from "@ceedhq/ads-web-sdk";
+```
+
+---
+
+## TypeScript型定義
+
+### コア型
+
+```typescript
+import type {
+  ResolvedAd,
+  AdFormat,
+  ResolvedLeadGenConfig,
+  ResolvedFollowupConfig,
+  StaticConfig,
+} from "@ceedhq/ads-web-sdk";
+```
+
+### ResolvedAd
+
+`requestAd()`から返されるメインの広告ペイロード：
+
+```typescript
+interface ResolvedAd {
+  id: string;
+  advertiserId: string;
+  advertiserName: string;
+  format: AdFormat;  // "action_card" | "lead_gen" | "static" | "followup"
+  title: string;
+  description: string;
+  ctaText: string;
+  ctaUrl: string;
+  leadGenConfig?: ResolvedLeadGenConfig;
+  staticConfig?: StaticConfig;
+  followupConfig?: ResolvedFollowupConfig;
+}
+```
+
+### フォーマット固有の設定
+
+```typescript
+// Lead Gen
+interface ResolvedLeadGenConfig {
+  placeholder: string;
+  submitButtonText: string;
+  autocompleteType: "email" | "name" | "tel" | "off";
+  successMessage: string;
+}
+
+// Static
+interface StaticConfig {
+  displayPosition: "top" | "bottom" | "inline" | "sidebar";
+  targetingParams?: {
+    keywords?: string[];
+    geo?: string[];
+    deviceTypes?: ("desktop" | "mobile" | "tablet")[];
+  };
+}
+
+// Followup
+interface ResolvedFollowupConfig {
+  questionText: string;
+  tapAction: "expand" | "redirect" | "submit";
+  tapActionUrl?: string;
+}
+```
+
+---
+
+## エラーハンドリング
+
+### 初期化エラー
+
+```typescript
+try {
+  initialize(""); // 空のappId
+} catch (error) {
+  // "CeedAds.initialize: appId is required"
+}
+```
+
+### 広告がない場合
+
+```typescript
+const { ad, requestId } = await requestAd({...});
+
+if (!ad) {
+  // このコンテキストにマッチする広告がない
+  // これは正常です — 広告は常に利用可能とは限りません
+  return;
+}
+```
+
+### フォーマット設定が不足している場合
+
+```typescript
+// ad.formatが"lead_gen"だがleadGenConfigがない場合:
+renderAd(ad, container, requestId);
+// エラー: "leadGenConfig is required for lead_gen format"
+```
+
+---
+
+## 実装例
+
+### React統合
 
 ```tsx
-function InlineAdCard({ ad, requestId }) {
-  const ref = useRef(null);
+import { useRef, useEffect, useState } from "react";
+import { initialize, requestAd, renderAd } from "@ceedhq/ads-web-sdk";
+import type { ResolvedAd } from "@ceedhq/ads-web-sdk";
+
+// 一度だけ初期化
+initialize("your-app-id");
+
+function ChatMessage({ message }: { message: string }) {
+  const adRef = useRef<HTMLDivElement>(null);
+  const [ad, setAd] = useState<ResolvedAd | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
+    async function fetchAd() {
+      const result = await requestAd({
+        conversationId: "chat-123",
+        messageId: crypto.randomUUID(),
+        contextText: message,
+      });
+      setAd(result.ad);
+      setRequestId(result.requestId);
+    }
+    fetchAd();
+  }, [message]);
 
-    ref.current.innerHTML = "";
-    renderAd(ad, ref.current, requestId);
+  useEffect(() => {
+    if (ad && adRef.current) {
+      adRef.current.innerHTML = "";
+      renderAd(ad, adRef.current, requestId);
+    }
   }, [ad, requestId]);
 
-  return <div ref={ref} />;
+  return (
+    <div>
+      <p>{message}</p>
+      <div ref={adRef} />
+    </div>
+  );
 }
 ```
 
-## 📡 バックエンドの動作概要
+### バニラJavaScript
 
-`requestAd()` を呼び出すと：
+```html
+<div id="ad-container"></div>
 
-- バックエンドがメッセージコンテキストを評価します。
-- 広告が適切な場合：
-  - `{ ad, requestId }` を返します
-- 適切でない場合：
-  - `{ ad: null }` を返します
+<script type="module">
+  import { initialize, showAd } from "@ceedhq/ads-web-sdk";
 
-`renderAd()` を呼び出すと：
+  initialize("demo-app");
 
-- UI アクションカードが自動生成されます。
-- インプレッショントラッキングがトリガーされます。
-- CTA 要素にクリックトラッキングが設定されます。
+  document.getElementById("send-btn").addEventListener("click", async () => {
+    const message = document.getElementById("input").value;
 
-## 🔧 ローカル開発のヒント
+    await showAd({
+      conversationId: "demo-session",
+      messageId: Date.now().toString(),
+      contextText: message,
+      targetElement: document.getElementById("ad-container"),
+    });
+  });
+</script>
+```
 
-SDK を本番ではなく**ローカル** API に向けるには：
+---
 
-```ts
+## ローカル開発
+
+SDKをローカルAPIサーバーに向ける：
+
+```typescript
+// 開発モード
+initialize("test-app", "http://localhost:3000/api");
+
+// または相対パス（同一オリジン）
 initialize("test-app", "/api");
 ```
 
-## 📄 TypeScript サポート
+### デモページ
 
-```ts
-import type { ResolvedAd } from "@ceedhq/ads-web-sdk";
-```
+SDKの動作を確認：
 
-## 🪪 ライセンス
+- [デモ動画](https://drive.google.com/file/d/1EBDielkMjenRoehv24jBn9sRLou0MCs-/view?usp=sharing)
+- [デモソースコード](https://github.com/Ceed-dev/ceed-ads/blob/main/src/app/sdk-test/page.tsx)
+
+---
+
+## スタイリング
+
+すべての広告カードはダークテーマを使用し、以下のCSSクラスを持ちます：
+
+| クラス | 説明 |
+|-------|------|
+| `.ceed-ads-card` | ベースカードコンテナ |
+| `.ceed-ads-action-card` | Action Cardフォーマット |
+| `.ceed-ads-lead-gen` | Lead Genフォーマット |
+| `.ceed-ads-static` | Staticフォーマット |
+| `.ceed-ads-followup` | Followupフォーマット |
+
+カードの最大幅は460pxで、一貫性のためにインラインスタイルを使用しています。
+
+---
+
+## ライセンス
 
 MIT © Ceed

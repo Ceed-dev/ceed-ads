@@ -96,6 +96,7 @@ async requestAd(options: {
   messageId: string;
   contextText: string;
   userId?: string;
+  formats?: AdFormat[];
 }): Promise<{ ad: ResolvedAd | null; requestId: string | null }>
 ```
 
@@ -105,6 +106,7 @@ async requestAd(options: {
 | `messageId` | `string` | Yes | Unique ID for the message |
 | `contextText` | `string` | Yes | User message text for keyword matching |
 | `userId` | `string` | No | Optional user identifier |
+| `formats` | `AdFormat[]` | No | Array of ad formats to request (defaults to all) |
 
 **Example:**
 
@@ -165,6 +167,7 @@ async showAd(options: {
   contextText: string;
   targetElement: HTMLElement;
   userId?: string;
+  formats?: AdFormat[];
 }): Promise<void>
 ```
 
@@ -335,6 +338,53 @@ followupConfig: {
   tapActionUrl?: string;     // Required if tapAction is "redirect"
 }
 ```
+
+---
+
+## Specifying Formats
+
+Developers can use the `formats` parameter to specify which ad formats they want to receive.
+
+### Request Specific Formats Only
+
+```typescript
+// Request only action_card and lead_gen formats
+const { ad, requestId } = await requestAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "I want to learn English",
+  formats: ["action_card", "lead_gen"],
+});
+
+// Also works with showAd
+await showAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "I want to learn English",
+  targetElement: document.getElementById("ad-slot"),
+  formats: ["action_card", "lead_gen"],
+});
+```
+
+### Request All Formats (Default)
+
+```typescript
+// If formats is not specified, all formats are eligible
+const { ad, requestId } = await requestAd({
+  conversationId: "chat-123",
+  messageId: crypto.randomUUID(),
+  contextText: "I want to learn English",
+});
+```
+
+### Available Format Values
+
+| Value | Description |
+|-------|-------------|
+| `"action_card"` | Standard CTA card |
+| `"lead_gen"` | Email capture form |
+| `"static"` | Banner-style ad |
+| `"followup"` | Sponsored question |
 
 ---
 
