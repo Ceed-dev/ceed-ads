@@ -39,7 +39,8 @@ function scoreTextMatch(ad: Ad, keywords: string[]): number {
 
 export async function generateCandidates(
   contextText: string,
-  language: string
+  language: string,
+  formats?: string[]
 ): Promise<ScoredCandidate[]> {
   const englishText = await toEnglish(contextText, language);
   const keywords = tokenize(englishText);
@@ -48,7 +49,16 @@ export async function generateCandidates(
     return [];
   }
 
-  const ads = await getActiveAds();
+  let ads = await getActiveAds();
+
+  // Filter by formats if specified
+  if (formats && formats.length > 0) {
+    ads = ads.filter((ad) => formats.includes(ad.format));
+  }
+
+  if (ads.length === 0) {
+    return [];
+  }
   const candidates: ScoredCandidate[] = [];
 
   for (const ad of ads) {

@@ -99,7 +99,8 @@ export async function decideAdV2(
   contextText: string,
   language: string,
   recentAdIds: string[] = [],
-  recentAdvertiserIds: string[] = []
+  recentAdvertiserIds: string[] = [],
+  formats?: string[]
 ): Promise<{ ad: ResolvedAd | null; meta: V2DecisionMeta }> {
   const startTime = performance.now();
 
@@ -124,7 +125,7 @@ export async function decideAdV2(
 
   // Phase 2: Candidate generation
   const candStart = performance.now();
-  const candidates = await generateCandidates(contextText, language);
+  const candidates = await generateCandidates(contextText, language, formats);
   const candEnd = performance.now();
 
   // Early exit if no candidates

@@ -73,6 +73,7 @@ function tagMatchesContext(context: string, tag: string): boolean {
 export async function decideAdByKeyword(
   contextText: string,
   language: string,
+  formats?: string[],
 ): Promise<ResolvedAd | null> {
   // If language is not supported, do not return any ad
   if (!SUPPORTED_LANGUAGES.has(language)) {
@@ -96,10 +97,17 @@ export async function decideAdByKeyword(
   if (adsSnap.empty) return null;
 
   // Convert ads into JS objects
-  const ads = adsSnap.docs.map((doc) => ({
+  let ads = adsSnap.docs.map((doc) => ({
     ...(doc.data() as Ad),
     id: doc.id,
   }));
+
+  // Filter by formats if specified
+  if (formats && formats.length > 0) {
+    ads = ads.filter((ad) => formats.includes(ad.format));
+  }
+
+  if (ads.length === 0) return null;
 
   // --------------------------------------------------------------
   // 2. Score each ad based on matched tags

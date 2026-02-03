@@ -33,10 +33,11 @@ async function decideAd(
   contextText: string,
   language: string,
   recentAdIds: string[],
-  recentAdvertiserIds: string[]
+  recentAdvertiserIds: string[],
+  formats?: string[]
 ): Promise<DecisionResult> {
   if (!isV2Enabled(appId)) {
-    const ad = await decideAdByKeyword(contextText, language);
+    const ad = await decideAdByKeyword(contextText, language, formats);
     return { ad, algorithmVersion: "v1" };
   }
 
@@ -47,7 +48,8 @@ async function decideAd(
       contextText,
       language,
       recentAdIds,
-      recentAdvertiserIds
+      recentAdvertiserIds,
+      formats
     );
 
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -62,7 +64,7 @@ async function decideAd(
     };
   } catch (error) {
     console.warn("[decideAd] V2 failed, falling back to V1:", error);
-    const ad = await decideAdByKeyword(contextText, language);
+    const ad = await decideAdByKeyword(contextText, language, formats);
     return { ad, algorithmVersion: "v1" };
   }
 }
@@ -103,6 +105,7 @@ export async function POST(req: NextRequest) {
       contextText,
       userId,
       sdkVersion = "1.0.0",
+      formats,
     } = body;
 
     /* ------------------------------------------------------------------
@@ -168,14 +171,14 @@ export async function POST(req: NextRequest) {
 
       if (!withinCooldown) {
         // Cooldown expired → run normal ad decision
-        decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds);
+        decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds, formats);
       } else {
         // Cooldown active → do NOT show ad
         decisionResult = null;
       }
     } else {
       // No prior successful ads → run normal ad decision
-      decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds);
+      decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds, formats);
     }
 
     const decidedAd = decisionResult?.ad ?? null;
