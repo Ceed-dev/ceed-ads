@@ -10,6 +10,8 @@
  * future expansion (e.g., attribution, model diagnostics, or richer context).
  */
 
+import type { V2DecisionMeta } from "@/lib/ads/deciders/v2/types";
+
 export type RequestId = string;
 
 /** Processing result for an ad-decision request. */
@@ -66,4 +68,10 @@ export interface RequestLog {
 
   /** Metadata timestamps. */
   meta: RequestMeta;
+
+  /** Algorithm version used for ad decision */
+  algorithmVersion?: "v1" | "v2";
+
+  /** V2 algorithm metadata (only if v2 used) */
+  v2Meta?: V2DecisionMeta;
 }

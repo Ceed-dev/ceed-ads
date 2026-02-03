@@ -5,6 +5,9 @@ import type { RequestLog } from "@/types";
 import { decideAdByKeyword } from "@/lib/ads/deciders/keywordBased";
 import type { ResolvedAd } from "@/types";
 import type { Timestamp } from "firebase-admin/firestore";
+import { isV2Enabled, getV2TimeoutMs } from "@/lib/ads/featureFlags";
+import { decideAdV2 } from "@/lib/ads/deciders/v2";
+import type { V2DecisionMeta } from "@/lib/ads/deciders/v2/types";
 
 /* --------------------------------------------------------------------------
  * CORS CONFIG
@@ -15,6 +18,54 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+/* --------------------------------------------------------------------------
+ * AD DECISION WRAPPER (v1/v2 switch)
+ * --------------------------------------------------------------------------*/
+interface DecisionResult {
+  ad: ResolvedAd | null;
+  algorithmVersion: "v1" | "v2";
+  v2Meta?: V2DecisionMeta;
+}
+
+async function decideAd(
+  appId: string,
+  contextText: string,
+  language: string,
+  recentAdIds: string[],
+  recentAdvertiserIds: string[]
+): Promise<DecisionResult> {
+  if (!isV2Enabled(appId)) {
+    const ad = await decideAdByKeyword(contextText, language);
+    return { ad, algorithmVersion: "v1" };
+  }
+
+  const timeoutMs = getV2TimeoutMs();
+
+  try {
+    const v2Promise = decideAdV2(
+      contextText,
+      language,
+      recentAdIds,
+      recentAdvertiserIds
+    );
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("V2 timeout")), timeoutMs)
+    );
+
+    const result = await Promise.race([v2Promise, timeoutPromise]);
+    return {
+      ad: result.ad,
+      algorithmVersion: "v2",
+      v2Meta: result.meta,
+    };
+  } catch (error) {
+    console.warn("[decideAd] V2 failed, falling back to V1:", error);
+    const ad = await decideAdByKeyword(contextText, language);
+    return { ad, algorithmVersion: "v1" };
+  }
+}
 
 /**
  * OPTIONS /api/requests
@@ -71,26 +122,29 @@ export async function POST(req: NextRequest) {
     const language = detected === "und" ? "eng" : detected;
 
     /* ------------------------------------------------------------------
-     * 3. Ad Frequency Control (Cooldown)
+     * 3. Ad Frequency Control (Cooldown) & Recent Ads Collection
      *
      * Prevents showing ads too frequently in the same conversation.
      * Checks the latest request with status: "success".
+     * Also collects recent ad/advertiser IDs for fatigue penalty.
      * ------------------------------------------------------------------*/
     const COOLDOWN_MS = 60 * 1000; // 60 seconds
+    const RECENT_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours for fatigue
 
-    const latestSuccessSnap = await db
+    const recentSuccessSnap = await db
       .collection("requests")
       .where("conversationId", "==", conversationId)
       .where("status", "==", "success")
       .orderBy("meta.createdAt", "desc")
-      .limit(1)
+      .limit(10)
       .get();
 
-    let decidedAd: ResolvedAd | null = null;
+    let decisionResult: DecisionResult | null = null;
+    const recentAdIds: string[] = [];
+    const recentAdvertiserIds: string[] = [];
 
-    if (!latestSuccessSnap.empty) {
-      // There is at least one previous successful ad shown in this conversation.
-      const latestData = latestSuccessSnap.docs[0].data() as RequestLog;
+    if (!recentSuccessSnap.empty) {
+      const latestData = recentSuccessSnap.docs[0].data() as RequestLog;
 
       // Firestore may store timestamps as Date or Timestamp → normalize to Date.
       const rawCreatedAt = latestData.meta.createdAt as Date | Timestamp;
@@ -101,24 +155,42 @@ export async function POST(req: NextRequest) {
       const nowTs = Date.now();
       const withinCooldown = nowTs - lastShownAt < COOLDOWN_MS;
 
+      // Collect recent ad/advertiser IDs for fatigue penalty
+      for (const doc of recentSuccessSnap.docs) {
+        const data = doc.data() as RequestLog & { decidedAdvertiserId?: string };
+        const rawTs = data.meta.createdAt as Date | Timestamp;
+        const ts = rawTs instanceof Date ? rawTs : rawTs.toDate();
+        if (nowTs - ts.getTime() < RECENT_WINDOW_MS) {
+          if (data.decidedAdId) recentAdIds.push(data.decidedAdId);
+          if (data.decidedAdvertiserId) recentAdvertiserIds.push(data.decidedAdvertiserId);
+        }
+      }
+
       if (!withinCooldown) {
         // Cooldown expired → run normal ad decision
-        decidedAd = await decideAdByKeyword(contextText, language);
+        decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds);
       } else {
         // Cooldown active → do NOT show ad
-        decidedAd = null;
+        decisionResult = null;
       }
     } else {
       // No prior successful ads → run normal ad decision
-      decidedAd = await decideAdByKeyword(contextText, language);
+      decisionResult = await decideAd(appId, contextText, language, recentAdIds, recentAdvertiserIds);
     }
+
+    const decidedAd = decisionResult?.ad ?? null;
 
     /* ------------------------------------------------------------------
      * 4. Store Request Log
      * ------------------------------------------------------------------*/
     const now = new Date();
 
-    const requestDoc: RequestLog = {
+    // Build base request document
+    const requestDoc: RequestLog & {
+      algorithmVersion?: "v1" | "v2";
+      v2Meta?: V2DecisionMeta;
+      decidedAdvertiserId?: string;
+    } = {
       appId,
       conversationId,
       messageId,
@@ -132,9 +204,20 @@ export async function POST(req: NextRequest) {
     };
 
     // Optional fields
-    if (decidedAd) requestDoc.decidedAdId = decidedAd.id;
+    if (decidedAd) {
+      requestDoc.decidedAdId = decidedAd.id;
+      requestDoc.decidedAdvertiserId = decidedAd.advertiserId;
+    }
     if (sdkVersion) requestDoc.sdkVersion = sdkVersion;
     if (userId) requestDoc.userId = userId;
+
+    // V2 metadata
+    if (decisionResult) {
+      requestDoc.algorithmVersion = decisionResult.algorithmVersion;
+      if (decisionResult.v2Meta) {
+        requestDoc.v2Meta = decisionResult.v2Meta;
+      }
+    }
 
     const requestRef = await db.collection("requests").add(requestDoc);
 

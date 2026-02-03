@@ -209,6 +209,12 @@ export interface Ad {
 
   /** Configuration for followup format (required if format is "followup") */
   followupConfig?: FollowupConfig;
+
+  /** Cost per click in USD (v2 ranking) */
+  cpc?: number;
+
+  /** Base click-through rate (v2 ranking) */
+  baseCTR?: number;
 }
 
 /* ============================================================
