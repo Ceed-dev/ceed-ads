@@ -151,3 +151,37 @@ This repository contains both the backend API and the Web SDK. The SDK is publis
 
 - Created comprehensive README.md with setup instructions and API reference
 - Created CONTEXT.md with project background and architectural decisions
+
+### 2026-02-03: Ad Decision Algorithm v2 Implementation
+
+#### What Was Done
+- Implemented v2 ad decision algorithm with intent-aware scoring
+- Added opportunity scoring (0-1 scale) based on user context
+- Added CPC-based ranking with fatigue penalty
+- Added epsilon exploration (5% random from top-5)
+- Added feature flags for gradual v1/v2 rollout
+- Added in-memory caching for ads/advertisers (60s TTL)
+
+#### Key Technical Decisions
+1. **Word Boundary Matching**: Changed from `includes()` to regex `/\b${keyword}\b/`
+   to prevent false positives (e.g., "hi" matching "this")
+2. **Intent Categories**: sensitive, chitchat, low_intent, medium_commercial, high_commercial
+3. **Thresholds**: T_LOW=0.3 (no ad), T_HIGH=0.7 (all formats allowed)
+4. **Feature Flag Control**: V2_ENABLED, V2_APP_IDS, V2_PERCENTAGE env vars
+
+#### Bug Fixes
+- Fixed opportunityScorer.ts keyword matching bug
+  (was matching "hi" in "this", "machine", "history")
+
+#### Test Coverage
+- 171 unit tests (all passing)
+- 19 E2E tests covering 8 real-world scenarios
+
+#### New Files
+- src/lib/ads/deciders/v2/* (7 files)
+- src/lib/ads/cache/* (2 files)
+- src/lib/ads/featureFlags.ts
+- src/__tests__/e2e/adDecisionV2.e2e.test.ts
+
+#### Commits
+- acb198f: feat(ads): implement Ad Decision Algorithm v2
