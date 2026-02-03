@@ -184,7 +184,7 @@ function FormatDemo({
       {isSelected && (
         <div className="mt-4 p-4 bg-gray-900/50 rounded-lg">
           <div className="text-xs text-gray-500 mb-3 font-mono">
-            format: "{format}" | requestId: "demo-{format}"
+            format: &quot;{format}&quot; | requestId: &quot;demo-{format}&quot;
           </div>
           <div ref={containerRef} />
         </div>
