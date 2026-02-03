@@ -207,6 +207,31 @@ Each format renders differently:
 - Entire card is clickable
 - Hover effect on desktop
 
+## Ad Selection Algorithm
+
+Ceed Ads supports two ad selection algorithms, controllable via feature flags.
+
+### v1 (Keyword-based)
+
+Simple keyword matching algorithm:
+- Translates context text to English (if needed)
+- Matches against ad keyword lists
+- Returns first matching ad
+
+### v2 (Multi-phase Decisioning)
+
+Advanced algorithm with four phases:
+
+1. **Opportunity Scoring**: Evaluates context quality and intent detection
+2. **Candidate Generation**: Fetches matching ads based on keywords
+3. **Ranking**: Scores candidates using:
+   - Base predicted CTR
+   - Fatigue penalty (recent ad/advertiser exposure)
+   - Format-specific adjustments
+4. **Selection with Exploration**: Balances exploitation vs exploration
+
+Enable v2 via environment variable or feature flag configuration. Falls back to v1 on timeout or error.
+
 ## Firestore Collections
 
 | Collection | Description |
