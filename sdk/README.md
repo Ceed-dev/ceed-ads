@@ -264,9 +264,12 @@ leadGenConfig: {
 
 ### `static`
 
-**Display format** — Similar to action_card, for page load targeting.
+**Display format** — Renders immediately on page load, typically below the text input field.
 
 ```
+┌─────────────────────────────────┐
+│ Ask AI anything...          [+] │  ← Input field
+└─────────────────────────────────┘
 ┌─────────────────────────────────┐
 │ ● Advertiser Name          Ad   │
 ├─────────────────────────────────┤
@@ -280,11 +283,12 @@ leadGenConfig: {
 └─────────────────────────────────┘
 ```
 
-**Use case:** Banner-style ads for sidebars, page headers, or footers.
+**Use case:** User-targeted ads displayed around text input interfaces, based on user's previous conversations and ad behavior data.
 
 **Behavior:**
-- Identical rendering to `action_card`
-- Different targeting logic on backend (keywords, geo, device type)
+- Renders immediately on page load before any user interaction
+- Identical card rendering to `action_card`
+- Different targeting logic on backend (user history, keywords, geo, device type)
 - Impression tracked on render
 - Click tracked on CTA click
 

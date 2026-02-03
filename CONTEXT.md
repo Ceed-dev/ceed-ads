@@ -49,14 +49,14 @@ Ceed Ads is a **contextual advertising platform** designed specifically for AI c
 - **Tracking**: Impression and click events
 - **Frequency Control**: 60-second cooldown per conversation
 
-### Ad Formats Roadmap
+### Ad Formats
 
 | Format | Status | Description |
 |--------|--------|-------------|
-| `action_card` | Live | Text card with title, description, CTA |
-| `lead_gen` | Planned | Form-based lead capture |
-| `static` | Planned | Image/banner ads |
-| `followup` | Planned | Conversation-triggered follow-up |
+| `action_card` | Live | Text card with title, description, CTA button |
+| `lead_gen` | Live | Email capture form with success message |
+| `static` | Live | Display ad below text input field (page load targeting) |
+| `followup` | Live | Tappable sponsored question card with expand/redirect action |
 
 ## Key Decisions and Rationale
 
@@ -106,7 +106,7 @@ Ceed Ads is a **contextual advertising platform** designed specifically for AI c
 
 4. **No Real-time Analytics**: Event data is stored but not aggregated in real-time.
 
-5. **Single Ad Format**: Only `action_card` is implemented. Multi-format support requires schema changes.
+5. **Four Ad Formats**: action_card, lead_gen, static, and followup are all implemented and live.
 
 ## Related Repositories
 
@@ -185,3 +185,26 @@ This repository contains both the backend API and the Web SDK. The SDK is publis
 
 #### Commits
 - acb198f: feat(ads): implement Ad Decision Algorithm v2
+
+### 2026-02-03: Formats Parameter & Ad Showcase
+
+#### What Was Done
+- Added `formats` parameter support to `/api/requests` endpoint
+- Backend now filters ads by requested formats (v1 and v2 deciders)
+- Created `/ad-showcase` demo page for screen recording
+- Updated SDK documentation for `static` format positioning
+
+#### Ad Showcase Page (`/ad-showcase`)
+A demo page displaying 4 separate chat rooms, each demonstrating one ad format:
+- **action_card**: Language learning conversation, CTA opens URL in new tab
+- **lead_gen**: Travel planning conversation, email form with success message
+- **static**: Fitness goals conversation, fixed banner below input field
+- **followup**: Cooking ideas conversation, tappable card with expand action
+
+#### Documentation Updates
+- Updated `static` format description to match Koala Labs specification
+- Static ads now described as "below text input field" (not sidebars/headers)
+- Added visual diagram showing input field + ad layout
+
+#### Commits
+- dc9ba46: feat(api): add formats parameter support to /api/requests
