@@ -1,5 +1,7 @@
 # Ceed Ads
 
+> **⚠️ 本プロダクトは 2026-09-11 に終了しました。GCP 上のリソースとデータは全て削除済みです。** 構成・データ構造・再構築手順は [廃止記録](DECOMMISSION.md) を参照。
+
 A contextual advertising platform for AI chat applications. Serves relevant ads based on conversation context using keyword-based matching.
 
 ## Overview
